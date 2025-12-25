@@ -24,26 +24,123 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 - **Security**: Spring Security, JJWT
 - **Build Tool**: Maven
 
-## 🔌 API Documentation
+## 🔌 API Reference
 
-### Authentication
+### 🔐 Authentication
 
-- `POST /api/auth/register` - Register a new user.
-  - Body: `{"email": "...", "password": "...", "calorieGoal": 2000}`
-- `POST /api/auth/login` - Authenticate and receive JWT.
-  - Body: `{"email": "...", "password": "..."}`
+#### 1. Register User
 
-### Meals
+**Endpoint**: `POST /api/auth/register`
 
-- `POST /api/meals/log` - Log a meal using natural language. (Requires Bearer Token)
-  - Body: `{"text": "I ate a banana and 2 eggs", "mealType": "BREAKFAST"}`
-  - Response: Detailed breakdown of food items and total macros.
-- `GET /api/meals/history` - **NEW**: Get full history of logged meals to display in chat.
+- **Request Body**:
+  ```json
+  {
+    "email": "user@example.com",
+    "password": "securePassword123",
+    "calorieGoal": 2000
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "token": "eyJhbGciOiJIUzI1NiJ9..."
+  }
+  ```
 
-### Dashboard
+#### 2. Login
 
-- `GET /api/dashboard/daily` - Get today's nutrition summary. (Requires Bearer Token)
-  - Response: `{"totalCalories": 500, "goal": 2000, "remaining": 1500, ...}`
+**Endpoint**: `POST /api/auth/login`
+
+- **Request Body**:
+  ```json
+  {
+    "email": "user@example.com",
+    "password": "securePassword123"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "token": "eyJhbGciOiJIUzI1NiJ9..."
+  }
+  ```
+
+### 🍛 Meals
+
+> **Note**: All Meal and Dashboard endpoints require the `Authorization` header:
+> `Authorization: Bearer <your_jwt_token>`
+
+#### 3. Log a Meal (AI Analysis)
+
+**Endpoint**: `POST /api/meals/log`
+
+- **Request Body**:
+  ```json
+  {
+    "text": "I had 2 idlis and sambar",
+    "mealType": "BREAKFAST" // Options: BREAKFAST, LUNCH, DINNER, SNACK
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "id": 1,
+    "text": "I had 2 idlis and sambar",
+    "timestamp": "2023-10-27T08:30:00",
+    "foodItems": [
+      {
+        "name": "idlis",
+        "quantity": "2 pieces",
+        "calories": 120,
+        "protein": 4.0,
+        "carbs": 24.0,
+        "fat": 0.5
+      },
+      ...
+    ],
+    "totalCalories": 250
+  }
+  ```
+
+#### 4. Get Meal History
+
+**Endpoint**: `GET /api/meals/history`
+
+- **Response**: A list of meal logs (structure same as Log Meal response), sorted by newest first.
+  ```json
+  [
+    {
+      "id": 2,
+      "text": "Chicken Curry",
+      ...
+    },
+    {
+      "id": 1,
+      "text": "2 Idlis",
+      ...
+    }
+  ]
+  ```
+
+### 📊 Dashboard
+
+#### 5. Get Daily Summary
+
+**Endpoint**: `GET /api/dashboard/daily`
+
+- **Query Param (Optional)**: `date=YYYY-MM-DD` (Defaults to today)
+
+- **Response**:
+  ```json
+  {
+    "id": 5,
+    "date": "2023-10-27",
+    "totalCalories": 1250,
+    "totalProtein": 65.5,
+    "totalCarbs": 140.0,
+    "totalFat": 45.0
+  }
+  ```
 
 ## 🧪 Testing
 

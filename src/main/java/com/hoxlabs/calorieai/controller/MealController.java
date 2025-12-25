@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hoxlabs.calorieai.dto.MealLogRequest;
 import com.hoxlabs.calorieai.dto.MealLogResponse;
 import com.hoxlabs.calorieai.service.MealService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,7 +21,7 @@ public class MealController {
     @PostMapping("/log")
     public ResponseEntity<MealLogResponse> logMeal(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody MealLogRequest request
+            @RequestBody @Valid MealLogRequest request
     ) throws JsonProcessingException {
         return ResponseEntity.ok(mealService.logMeal(userDetails.getUsername(), request));
     }

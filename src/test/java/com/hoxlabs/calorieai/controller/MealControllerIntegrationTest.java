@@ -20,6 +20,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,7 +48,7 @@ class MealControllerIntegrationTest {
         MealLogResponse response = MealLogResponse.builder()
                 .id(1L)
                 .text("Test Meal")
-                .foodItems(List.of(new AiNutritionResponse.FoodItemDto("Test Food", 100, 10.0, 10.0, 5.0)))
+                .foodItems(List.of(new AiNutritionResponse.FoodItemDto("Test Food", "1 serving", 100, 10.0, 10.0, 5.0)))
                 .totalCalories(100)
                 .build();
 
@@ -85,5 +86,25 @@ class MealControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    void getMealHistory_ShouldReturnResponse_WhenUserIsAuthenticated() throws Exception {
+        MealLogResponse response = MealLogResponse.builder()
+                .id(1L)
+                .text("History Meal")
+                .foodItems(List.of(new AiNutritionResponse.FoodItemDto("History Food", "1 serving", 200, 20.0, 20.0, 10.0)))
+                .totalCalories(200)
+                .build();
+
+        // Using any() string for email because @WithMockUser provides a default username "user"
+        when(mealService.getMealHistory(any(String.class))).thenReturn(List.of(response));
+
+        mockMvc.perform(get("/api/meals/history")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].text").value("History Meal"));
     }
 }

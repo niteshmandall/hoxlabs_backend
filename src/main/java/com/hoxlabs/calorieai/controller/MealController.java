@@ -25,4 +25,11 @@ public class MealController {
     ) throws JsonProcessingException {
         return ResponseEntity.ok(mealService.logMeal(userDetails.getUsername(), request));
     }
+
+    @GetMapping("/history")
+    public ResponseEntity<java.util.List<MealLogResponse>> getMealHistory(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(mealService.getMealHistory(userDetails.getUsername()));
+    }
 }

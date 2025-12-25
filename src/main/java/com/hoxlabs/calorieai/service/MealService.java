@@ -10,6 +10,7 @@ import com.hoxlabs.calorieai.repository.MealLogRepository;
 import com.hoxlabs.calorieai.repository.NutritionSummaryRepository;
 import com.hoxlabs.calorieai.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MealService {
 
     private final MealLogRepository mealLogRepository;
@@ -35,7 +37,10 @@ public class MealService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // 1. Analyze with AI
+        log.info("Analyzing meal for user: {}, text: {}", userEmail, request.getText());
         AiNutritionResponse aiResponse = aiNutritionService.analyzeMeal(request.getText());
+        int itemCount = (aiResponse.getFoodItems() != null) ? aiResponse.getFoodItems().size() : 0;
+        log.info("AI Analysis complete. Found {} items. Confidence: {}", itemCount, aiResponse.getConfidence());
 
         // 2. Save Meal Log
         MealLog mealLog = new MealLog();
@@ -95,12 +100,34 @@ public class MealService {
         nutritionSummaryRepository.save(summary);
     }
     
+    @Transactional(readOnly = true)
     public List<MealLogResponse> getMealHistory(String userEmail) {
          User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-         // Implementation for history would be fetching logs and items. 
-         // For brevity, skipping full DTO mapping here or assumes lazy loading.
-         // Let's implement a simple version.
-         return List.of(); // Placeholder
+
+         List<MealLog> logs = mealLogRepository.findByUserIdOrderByTimestampDesc(user.getId());
+         
+         return logs.stream().map(log -> {
+             List<AiNutritionResponse.FoodItemDto> itemDtos = log.getFoodItems().stream()
+                     .map(item -> new AiNutritionResponse.FoodItemDto(
+                             item.getName(), 
+                             "1 serving", // Default quantity as it's not in FoodItem entity yet, or handled elsewhere
+                             item.getCalories(), 
+                             item.getProtein(), 
+                             item.getCarbs(), 
+                             item.getFat()
+                     ))
+                     .collect(Collectors.toList());
+
+             int totalCals = itemDtos.stream().mapToInt(AiNutritionResponse.FoodItemDto::getCalories).sum();
+
+             return MealLogResponse.builder()
+                     .id(log.getId())
+                     .text(log.getRawText())
+                     .timestamp(log.getTimestamp())
+                     .foodItems(itemDtos)
+                     .totalCalories(totalCals)
+                     .build();
+         }).collect(Collectors.toList());
     }
 }

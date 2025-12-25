@@ -1,21 +1,26 @@
 # CalorieAI - Intelligent Nutrition Tracker
 
-CalorieAI is a robust Spring Boot backend application that leverages Artificial Intelligence to simplify calorie tracking. Users can describe their meals in natural language (e.g., "I had 2 rotis and a cup of dal"), and the system uses **Pollinations.ai** to analyze the text, extract nutritional data (Calories, Protein, Carbs, Fat), and log the meal.
+CalorieAI is a production-grade Spring Boot backend application that leverages Artificial Intelligence to simplify calorie tracking. Users can describe their meals in natural language (e.g., "I had 2 rotis and a cup of dal"), and the system uses **Pollinations.ai** to analyze the text, extract accurate nutritional data (Calories, Protein, Carbs, Fat) using strict Indian-standardized schemas, and log the meal.
 
 ## 🚀 Key Features
 
-- **AI-Powered Food Analysis**: Uses Pollinations.ai (OpenAI compatible) to parse natural language meal descriptions into structured nutritional data.
+- **Production-Grade AI Analysis**:
+  - Expert "Certified Nutritionist" System Prompts.
+  - Strict JSON Schema Validation.
+  - Specialized Rule Sets: Indian portion estimations, conservative oil usage.
+  - Edge Case Handling: Smart defaults for vague inputs, fast food, and homemade dishes.
+- **Meal History**: View complete chat history of past logged meals and AI responses.
 - **User Authentication**: Secure JWT-based registration and login system.
 - **Daily Dashboard**: Aggregates daily nutritional intake against user specific calorie goals.
-- **Robust Testing**: Comprehensive test suite covering Unit, Integration, and Edge Case scenarios (~35 tests).
+- **Robust Testing**: Comprehensive test suite covering Unit, Integration, and Edge Case scenarios (>35 tests).
 - **Secure**: Implements Spring Security 6 with stateless JWT authentication.
 
 ## 🛠️ Technology Stack
 
 - **Framework**: Spring Boot 3.4
 - **Language**: Java 17+
-- **Database**: H2 (Dev/Test), PostgreSQL (Production ready)
-- **AI Service**: Pollinations.ai (Free Tier)
+- **Database**: PostgreSQL (Primary), H2 (Test Isolation)
+- **AI Service**: Pollinations.ai (OpenAI compatible API)
 - **Security**: Spring Security, JJWT
 - **Build Tool**: Maven
 
@@ -33,6 +38,7 @@ CalorieAI is a robust Spring Boot backend application that leverages Artificial 
 - `POST /api/meals/log` - Log a meal using natural language. (Requires Bearer Token)
   - Body: `{"text": "I ate a banana and 2 eggs", "mealType": "BREAKFAST"}`
   - Response: Detailed breakdown of food items and total macros.
+- `GET /api/meals/history` - **NEW**: Get full history of logged meals to display in chat.
 
 ### Dashboard
 
@@ -41,7 +47,7 @@ CalorieAI is a robust Spring Boot backend application that leverages Artificial 
 
 ## 🧪 Testing
 
-The project includes a unified test suite that runs all Unit, Integration, and validation tests.
+The project includes a unified test suite that runs all Unit, Integration, and validation tests. Tests are configured to run on an isolated in-memory H2 database.
 
 **Run All Tests:**
 
@@ -49,23 +55,23 @@ The project includes a unified test suite that runs all Unit, Integration, and v
 mvn test -Dtest=CalorieAiTestSuite
 ```
 
-**Test Coverage:**
-
-- **Services**: `AuthService`, `MealService`, `PollinationsNutritionService`
-- **Controllers**: `AuthController`, `MealController`, `DashboardController`
-- **Repositories**: JPQL Query validation
-- **Security**: JWT generation/validation, Filter logic
-- **Validation**: DTO constraints (Null/Empty checks)
-
 ## 🏃‍♂️ Running Locally
 
-1.  **Clone the repository**.
-2.  **Build the project**:
+1.  **Prerequisites**:
+
+    - Java 17+
+    - Maven
+    - PostgreSQL (Local or Docker) running on port `5432`.
+    - Create a database named `calorieTracker`.
+
+2.  **Configuration**:
+
+    - The application is pre-configured to connect to `jdbc:postgresql://localhost:5432/calorieTracker` with user `postgres` and password `root`.
+    - Modify `src/main/resources/application.yml` if your credentials differ.
+
+3.  **Build & Run**:
     ```bash
     mvn clean install
-    ```
-3.  **Run the application**:
-    ```bash
     mvn spring-boot:run
     ```
 4.  The API will be available at `http://localhost:8080`.
@@ -75,9 +81,9 @@ mvn test -Dtest=CalorieAiTestSuite
 ```
 src/main/java/com/hoxlabs/calorieai
 ├── config/          # Security & App Config
-├── controller/      # REST Endpoints
+├── controller/      # REST Endpoints (Auth, Meal, Dashboard)
 ├── dto/             # Data Transfer Objects
-├── entity/          # JPA Entities
+├── entity/          # JPA Entities (User, MealLog, FoodItem)
 ├── exception/       # Global Error Handling
 ├── repository/      # Data Access Interfaces
 ├── security/        # JWT Filter & Util

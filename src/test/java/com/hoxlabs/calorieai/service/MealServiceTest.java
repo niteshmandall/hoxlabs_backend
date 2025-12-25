@@ -52,7 +52,7 @@ class MealServiceTest {
         MealLogRequest req = new MealLogRequest("Test", MealType.LUNCH);
         
         AiNutritionResponse aiRes = new AiNutritionResponse();
-        aiRes.setFoodItems(List.of(new AiNutritionResponse.FoodItemDto("Food", 100, 10.0, 10.0, 5.0)));
+        aiRes.setFoodItems(List.of(new AiNutritionResponse.FoodItemDto("Food", "1 serving", 100, 10.0, 10.0, 5.0)));
         
         MealLog savedLog = new MealLog();
         savedLog.setId(100L);

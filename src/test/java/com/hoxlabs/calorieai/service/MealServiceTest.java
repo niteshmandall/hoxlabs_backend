@@ -16,14 +16,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
@@ -33,63 +33,96 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class MealServiceTest {
 
-    @Mock
-    private MealLogRepository mealLogRepository;
-    @Mock
-    private FoodItemRepository foodItemRepository;
-    @Mock
-    private NutritionSummaryRepository nutritionSummaryRepository;
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private AiNutritionService aiNutritionService;
+    @Mock private MealLogRepository mealLogRepository;
+    @Mock private FoodItemRepository foodItemRepository;
+    @Mock private NutritionSummaryRepository nutritionSummaryRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private AiNutritionService aiNutritionService;
 
     @InjectMocks
     private MealService mealService;
 
+    // --- Log Meal Success ---
+
     @Test
     void logMeal_ShouldSaveLogAndItems_WhenUserExists() throws JsonProcessingException {
+        // Setup
         String email = "test@example.com";
-        Long userId = 1L;
-        MealLogRequest request = new MealLogRequest();
-        request.setText("Test Meal");
-        request.setMealType(MealType.LUNCH);
-
-        User user = new User();
-        user.setId(userId);
-        user.setEmail(email);
-
-        AiNutritionResponse aiResponse = new AiNutritionResponse();
-        AiNutritionResponse.FoodItemDto foodDto = new AiNutritionResponse.FoodItemDto("Test Food", 100, 10.0, 10.0, 5.0);
-        aiResponse.setFoodItems(List.of(foodDto));
-
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
-        when(aiNutritionService.analyzeMeal(request.getText())).thenReturn(aiResponse);
-
+        User user = new User(); user.setId(1L); user.setEmail(email);
+        MealLogRequest req = new MealLogRequest("Test", MealType.LUNCH);
+        
+        AiNutritionResponse aiRes = new AiNutritionResponse();
+        aiRes.setFoodItems(List.of(new AiNutritionResponse.FoodItemDto("Food", 100, 10.0, 10.0, 5.0)));
+        
         MealLog savedLog = new MealLog();
         savedLog.setId(100L);
-        savedLog.setUser(user);
-        savedLog.setMealType(request.getMealType());
-        savedLog.setRawText(request.getText());
+        savedLog.setRawText("Test");
+        savedLog.setMealType(MealType.LUNCH);
 
-        when(mealLogRepository.save(any(MealLog.class))).thenReturn(savedLog);
-
-        MealLogResponse response = mealService.logMeal(email, request);
-
-        assertNotNull(response);
-        assertEquals(100L, response.getId());
-        assertEquals("Test Meal", response.getText());
-
-        verify(mealLogRepository).save(any(MealLog.class));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(aiNutritionService.analyzeMeal("Test")).thenReturn(aiRes);
+        when(mealLogRepository.save(any())).thenReturn(savedLog);
+        
+        // Execute
+        MealLogResponse res = mealService.logMeal(email, req);
+        
+        // Verify
+        assertNotNull(res);
+        assertEquals(100L, res.getId());
+        assertEquals(100, res.getTotalCalories());
         verify(foodItemRepository).saveAll(anyList());
-        verify(nutritionSummaryRepository).findByUserIdAndDate(eq(userId), any(LocalDate.class));
+        verify(nutritionSummaryRepository).findByUserIdAndDate(eq(1L), any(LocalDate.class));
     }
+
+    // --- Log Meal Failures ---
 
     @Test
     void logMeal_ShouldThrowException_WhenUserNotFound() {
-        String email = "missing@example.com";
-        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("miss@test.com")).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class, () -> mealService.logMeal("miss@test.com", new MealLogRequest()));
+    }
 
-        assertThrows(RuntimeException.class, () -> mealService.logMeal(email, new MealLogRequest()));
+    @Test
+    void logMeal_ShouldPropagateException_WhenAiServiceFails() throws JsonProcessingException {
+        User user = new User(); user.setEmail("test@example.com");
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        
+        when(aiNutritionService.analyzeMeal(any())).thenThrow(new RuntimeException("AI Down"));
+        
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> mealService.logMeal("test@example.com", new MealLogRequest("Text", MealType.SNACK)));
+        assertEquals("AI Down", ex.getMessage());
+    }
+
+    @Test
+    void logMeal_ShouldHandleEmptyFoodItems() throws JsonProcessingException {
+        String email = "test@example.com";
+        User user = new User(); user.setId(1L); user.setEmail(email);
+        
+        AiNutritionResponse aiRes = new AiNutritionResponse();
+        aiRes.setFoodItems(Collections.emptyList()); // Empty
+        
+        MealLog savedLog = new MealLog();
+        savedLog.setId(100L);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(aiNutritionService.analyzeMeal(any())).thenReturn(aiRes);
+        when(mealLogRepository.save(any())).thenReturn(savedLog);
+
+        MealLogResponse res = mealService.logMeal(email, new MealLogRequest("Text", MealType.SNACK));
+        
+        assertNotNull(res);
+        assertEquals(0, res.getTotalCalories());
+        verify(foodItemRepository).saveAll(anyList()); // Validates it doesn't crash on empty list
+    }
+    
+    @Test
+    void logMeal_ShouldThrowException_WhenDbSaveFails() throws Exception {
+        User user = new User(); user.setEmail("test@example.com");
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(aiNutritionService.analyzeMeal(any())).thenReturn(new AiNutritionResponse());
+        
+        when(mealLogRepository.save(any())).thenThrow(new DataIntegrityViolationException("DB Error"));
+        
+        assertThrows(DataIntegrityViolationException.class, () -> mealService.logMeal("test@example.com", new MealLogRequest("Text", MealType.SNACK)));
     }
 }

@@ -19,7 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PollinationsNutritionService implements AiNutritionService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     // Pollinations.ai OpenAI-compatible endpoint

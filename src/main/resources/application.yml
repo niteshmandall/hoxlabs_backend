@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: calorieai
+  datasource:
+    # Default to H2 for local development (No setup required)
+    url: jdbc:h2:mem:calorieai
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    # PostgreSQL Configuration (Uncomment and update credentials to use)
+    # url: jdbc:postgresql://localhost:5432/calorieai
+    # username: postgres
+    # password: password
+    # driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        # dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: false
+    baseline-on-migrate: true
+
+server:
+  port: 8080
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000 # 1 day
+
+openai:
+  api-key: dummy-openai-key
+  model: gpt-3.5-turbo
+
+gemini:
+  api-key: dummy-gemini-key

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: hoxlabs-backend
+    env: docker
+    region: singapore
+    plan: free
+    branch: dev
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: PORT
+        value: 8080

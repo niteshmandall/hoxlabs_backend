@@ -190,3 +190,22 @@ src/main/java/com/hoxlabs/calorieai
 ---
 
 _Built with ❤️ by HoxLabs_
+
+## Deployment
+
+### Render.com
+
+This application is ready for deployment on [Render](https://render.com).
+
+1.  **Create a New Web Service**: Connect your GitHub repository to Render.
+2.  **Configuration**:
+    - **Runtime**: Docker
+    - **Build Command**: (Not needed with Docker)
+    - **Start Command**: (Not needed with Docker)
+3.  **Environment Variables**:
+    - `SPRING_PROFILES_ACTIVE`: `prod` (Ensure you have a `application-prod.yml` or configure DB vars here)
+    - `PORT`: `8080`
+    - Database connection details (`SPRING_DATASOURCE_URL`, etc.) if not using the default or if overriding `application.yml`.
+4.  **Health Check**: Render should automatically detect `/actuator/health`.
+
+A `render.yaml` file is included for "Blueprint" deployments.

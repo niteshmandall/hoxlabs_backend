@@ -38,3 +38,9 @@ openai:
 
 gemini:
   api-key: dummy-gemini-key
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

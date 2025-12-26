@@ -33,6 +33,13 @@ public class AuthService {
                 Role.USER,
                 request.getCalorieGoal()
         );
+        user.setName(request.getName());
+        user.setAge(request.getAge());
+        user.setGender(request.getGender());
+        user.setWeight(request.getWeight());
+        user.setHeight(request.getHeight());
+        user.setFitnessGoal(request.getFitnessGoal());
+
         userRepository.save(user);
         var jwtToken = jwtUtil.generateToken(user);
         return AuthenticationResponse.builder()

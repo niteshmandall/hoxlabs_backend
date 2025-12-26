@@ -37,6 +37,18 @@ public class User implements UserDetails {
     @Column(nullable = false, length = 20)
     private Role role = Role.USER;
 
+    private String name;
+    private Integer age;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    private Float weight;
+    private Float height;
+
+    @Enumerated(EnumType.STRING)
+    private FitnessGoal fitnessGoal;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 

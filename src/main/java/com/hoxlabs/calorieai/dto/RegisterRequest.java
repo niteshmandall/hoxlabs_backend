@@ -13,4 +13,10 @@ public class RegisterRequest {
     private String email;
     private String password;
     private Integer calorieGoal;
+    private String name;
+    private Integer age;
+    private com.hoxlabs.calorieai.entity.Gender gender;
+    private Float weight;
+    private Float height;
+    private com.hoxlabs.calorieai.entity.FitnessGoal fitnessGoal;
 }

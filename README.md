@@ -13,6 +13,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 - **User Authentication**: Secure JWT-based registration and login system.
 - **Daily Dashboard**: Aggregates daily nutritional intake against user specific calorie goals.
 - **Robust Testing**: Comprehensive test suite covering Unit, Integration, and Edge Case scenarios (>35 tests).
+- **Multi-Tenancy & Data Isolation**: Strict user-level data segregation ensures users only access their own meals and metrics.
 - **Secure**: Implements Spring Security 6 with stateless JWT authentication.
 
 ## 🛠️ Technology Stack
@@ -37,13 +38,26 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   {
     "email": "user@example.com",
     "password": "securePassword123",
-    "calorieGoal": 2000
+    "calorieGoal": 2000,
+    "name": "Alex",
+    "age": 25,
+    "gender": "MALE",
+    "weight": 70.5,
+    "height": 175.0,
+    "fitnessGoal": "WEIGHT_LOSS"
   }
   ```
 - **Response**:
   ```json
   {
-    "token": "eyJhbGciOiJIUzI1NiJ9..."
+    "token": "eyJhbGciOiJIUzI1NiJ9...",
+    "user": {
+      "id": 123,
+      "name": "Alex",
+      "email": "user@example.com",
+      "age": 25,
+      ...
+    }
   }
   ```
 
@@ -61,7 +75,35 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 - **Response**:
   ```json
   {
-    "token": "eyJhbGciOiJIUzI1NiJ9..."
+    "token": "eyJhbGciOiJIUzI1NiJ9...",
+    "user": {
+      "id": 123,
+      "name": "Alex",
+      "email": "user@example.com",
+      "age": 25,
+      ...
+    }
+  }
+  ```
+
+#### 3. Get User Profile
+
+**Endpoint**: `GET /api/user/profile`
+
+- **Response**:
+- **Response**:
+  ```json
+  {
+    "id": 123,
+    "name": "Alex",
+    "email": "user@example.com",
+    "age": 25,
+    "gender": "MALE",
+    "weight": 70.5,
+    "height": 175.0,
+    "fitnessGoal": "WEIGHT_LOSS",
+    "calorieGoal": 2000,
+    "role": "USER"
   }
   ```
 
@@ -70,7 +112,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 > **Note**: All Meal and Dashboard endpoints require the `Authorization` header:
 > `Authorization: Bearer <your_jwt_token>`
 
-#### 3. Log a Meal (AI Analysis)
+#### 4. Log a Meal (AI Analysis)
 
 **Endpoint**: `POST /api/meals/log`
 
@@ -102,7 +144,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   }
   ```
 
-#### 4. Get Meal History
+#### 5. Get Meal History
 
 **Endpoint**: `GET /api/meals/history`
 
@@ -124,7 +166,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 
 ### 📊 Dashboard
 
-#### 5. Get Daily Summary
+#### 6. Get Daily Summary
 
 **Endpoint**: `GET /api/dashboard/daily`
 

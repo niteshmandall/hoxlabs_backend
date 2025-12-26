@@ -27,6 +27,7 @@ public class UserController {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         UserProfileDTO profile = UserProfileDTO.builder()
+                .id(user.getId())
                 .email(user.getEmail())
                 .name(user.getName())
                 .age(user.getAge())

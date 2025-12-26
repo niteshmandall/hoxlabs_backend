@@ -105,7 +105,7 @@ public class MealService {
          User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-         List<MealLog> logs = mealLogRepository.findByUserIdOrderByTimestampDesc(user.getId());
+         List<MealLog> logs = mealLogRepository.findAllByUserOrderByTimestampDesc(user);
          
          return logs.stream().map(log -> {
              List<AiNutritionResponse.FoodItemDto> itemDtos = log.getFoodItems().stream()

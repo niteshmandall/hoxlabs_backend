@@ -3,6 +3,7 @@ package com.hoxlabs.calorieai.service;
 import com.hoxlabs.calorieai.dto.AuthenticationRequest;
 import com.hoxlabs.calorieai.dto.AuthenticationResponse;
 import com.hoxlabs.calorieai.dto.RegisterRequest;
+import com.hoxlabs.calorieai.dto.UserProfileDTO;
 import com.hoxlabs.calorieai.entity.Role;
 import com.hoxlabs.calorieai.entity.User;
 import com.hoxlabs.calorieai.repository.UserRepository;
@@ -42,8 +43,22 @@ public class AuthService {
 
         userRepository.save(user);
         var jwtToken = jwtUtil.generateToken(user);
+        var userProfile = UserProfileDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .age(user.getAge())
+                .gender(user.getGender())
+                .weight(user.getWeight())
+                .height(user.getHeight())
+                .fitnessGoal(user.getFitnessGoal())
+                .calorieGoal(user.getCalorieGoal())
+                .role(user.getRole())
+                .build();
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .user(userProfile)
                 .build();
     }
 
@@ -57,8 +72,22 @@ public class AuthService {
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
         var jwtToken = jwtUtil.generateToken(user);
+        var userProfile = UserProfileDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .age(user.getAge())
+                .gender(user.getGender())
+                .weight(user.getWeight())
+                .height(user.getHeight())
+                .fitnessGoal(user.getFitnessGoal())
+                .calorieGoal(user.getCalorieGoal())
+                .role(user.getRole())
+                .build();
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .user(userProfile)
                 .build();
     }
 }

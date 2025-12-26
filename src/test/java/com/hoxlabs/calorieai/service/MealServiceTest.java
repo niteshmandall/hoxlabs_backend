@@ -125,4 +125,31 @@ class MealServiceTest {
         
         assertThrows(DataIntegrityViolationException.class, () -> mealService.logMeal("test@example.com", new MealLogRequest("Text", MealType.SNACK)));
     }
+
+    // --- Get Meal History ---
+
+    @Test
+    void getMealHistory_ShouldReturnLogs_WhenUserExists() {
+        // Setup
+        String email = "history@example.com";
+        User user = new User(); user.setEmail(email);
+        
+        MealLog log1 = new MealLog();
+        log1.setId(1L);
+        log1.setRawText("Meal 1");
+        log1.setTimestamp(java.time.LocalDateTime.now());
+        log1.setFoodItems(Collections.emptyList());
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(mealLogRepository.findAllByUserOrderByTimestampDesc(user)).thenReturn(List.of(log1));
+
+        // Execute
+        List<MealLogResponse> history = mealService.getMealHistory(email);
+
+        // Verify
+        assertNotNull(history);
+        assertEquals(1, history.size());
+        assertEquals("Meal 1", history.get(0).getText());
+        verify(mealLogRepository).findAllByUserOrderByTimestampDesc(user);
+    }
 }

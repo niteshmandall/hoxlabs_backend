@@ -1,6 +1,9 @@
 spring:
   application:
     name: calorieai
+  jackson:
+    mapper:
+      accept-case-insensitive-enums: true
   datasource:
     # Default to H2 (Commented out)
     # url: jdbc:h2:mem:calorieai

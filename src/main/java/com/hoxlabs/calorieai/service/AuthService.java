@@ -53,12 +53,53 @@ public class AuthService {
                 .height(user.getHeight())
                 .fitnessGoal(user.getFitnessGoal())
                 .calorieGoal(user.getCalorieGoal())
+                .profilePhotoUrl(user.getProfilePhotoUrl())
+                .proteinGoal(user.getProteinGoal())
+                .carbsGoal(user.getCarbsGoal())
+                .fatGoal(user.getFatGoal())
                 .role(user.getRole())
                 .build();
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .user(userProfile)
+                .build();
+    }
+
+    public UserProfileDTO updateProfile(String email, com.hoxlabs.calorieai.dto.UpdateProfileRequest request) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (request.getName() != null) user.setName(request.getName());
+        if (request.getAge() != null) user.setAge(request.getAge());
+        if (request.getGender() != null) user.setGender(request.getGender());
+        if (request.getWeight() != null) user.setWeight(request.getWeight());
+        if (request.getHeight() != null) user.setHeight(request.getHeight());
+        if (request.getFitnessGoal() != null) user.setFitnessGoal(request.getFitnessGoal());
+        if (request.getDailyCalorieGoal() != null) user.setCalorieGoal(request.getDailyCalorieGoal());
+        
+        if (request.getProfilePhotoUrl() != null) user.setProfilePhotoUrl(request.getProfilePhotoUrl());
+        if (request.getProteinGoal() != null) user.setProteinGoal(request.getProteinGoal());
+        if (request.getCarbsGoal() != null) user.setCarbsGoal(request.getCarbsGoal());
+        if (request.getFatGoal() != null) user.setFatGoal(request.getFatGoal());
+
+        user = userRepository.save(user);
+
+        return UserProfileDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .age(user.getAge())
+                .gender(user.getGender())
+                .weight(user.getWeight())
+                .height(user.getHeight())
+                .fitnessGoal(user.getFitnessGoal())
+                .calorieGoal(user.getCalorieGoal())
+                .profilePhotoUrl(user.getProfilePhotoUrl())
+                .proteinGoal(user.getProteinGoal())
+                .carbsGoal(user.getCarbsGoal())
+                .fatGoal(user.getFatGoal())
+                .role(user.getRole())
                 .build();
     }
 
@@ -82,6 +123,10 @@ public class AuthService {
                 .height(user.getHeight())
                 .fitnessGoal(user.getFitnessGoal())
                 .calorieGoal(user.getCalorieGoal())
+                .profilePhotoUrl(user.getProfilePhotoUrl())
+                .proteinGoal(user.getProteinGoal())
+                .carbsGoal(user.getCarbsGoal())
+                .fatGoal(user.getFatGoal())
                 .role(user.getRole())
                 .build();
 

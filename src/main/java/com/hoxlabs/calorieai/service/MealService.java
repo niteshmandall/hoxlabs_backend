@@ -130,4 +130,18 @@ public class MealService {
                      .build();
          }).collect(Collectors.toList());
     }
+    @Transactional
+    public void deleteMeal(Long mealId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        MealLog mealLog = mealLogRepository.findById(mealId)
+                .orElseThrow(() -> new RuntimeException("Meal not found"));
+
+        if (!mealLog.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized: You can only delete your own meals");
+        }
+
+        mealLogRepository.delete(mealLog);
+    }
 }

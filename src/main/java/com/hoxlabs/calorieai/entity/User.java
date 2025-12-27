@@ -49,6 +49,11 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private FitnessGoal fitnessGoal;
 
+    private String profilePhotoUrl;
+    private Integer proteinGoal;
+    private Integer carbsGoal;
+    private Integer fatGoal;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 

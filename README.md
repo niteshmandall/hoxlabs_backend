@@ -103,8 +103,32 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
     "height": 175.0,
     "fitnessGoal": "WEIGHT_LOSS",
     "calorieGoal": 2000,
+    "photoUrl": "http://...",
+    "proteinGoal": 150,
+    "carbsGoal": 200,
+    "fatGoal": 65,
     "role": "USER"
   }
+  ```
+
+#### 4. Update User Profile
+
+**Endpoint**: `PUT /api/user/profile`
+
+- **Request Body** (All fields optional):
+  ```json
+  {
+    "name": "New Name",
+    "dailyCalorieGoal": 2200,
+    "proteinGoal": 160,
+    "carbsGoal": 210,
+    "fatGoal": 70,
+    "profilePhotoUrl": "https://example.com/me.jpg"
+  }
+  ```
+- **Response**: Returns the updated User Profile (same JSON structure as Get Profile).
+  ```
+
   ```
 
 ### 🍛 Meals
@@ -163,6 +187,13 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
     }
   ]
   ```
+
+#### 6. Delete a Meal
+
+**Endpoint**: `DELETE /api/meals/{id}`
+
+- **Path Parameter**: `id` (ID of the meal to delete)
+- **Response**: `200 OK` (Empty body)
 
 ### 📊 Dashboard
 

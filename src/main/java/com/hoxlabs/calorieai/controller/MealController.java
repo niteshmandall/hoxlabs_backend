@@ -32,4 +32,12 @@ public class MealController {
     ) {
         return ResponseEntity.ok(mealService.getMealHistory(userDetails.getUsername()));
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteMeal(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id
+    ) {
+        mealService.deleteMeal(id, userDetails.getUsername());
+        return ResponseEntity.ok().build();
+    }
 }

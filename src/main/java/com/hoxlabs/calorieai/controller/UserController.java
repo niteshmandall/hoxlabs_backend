@@ -17,6 +17,7 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final com.hoxlabs.calorieai.service.ImageService imageService;
 
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDTO> getUserProfile() {
@@ -50,5 +51,18 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         return ResponseEntity.ok(authService.updateProfile(email, request));
+    }
+
+    @PostMapping(value = "/profile-image", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<java.util.Map<String, String>> uploadProfileImage(
+            @RequestParam("image") org.springframework.web.multipart.MultipartFile file
+    ) throws java.io.IOException {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        
+        String imageUrl = imageService.saveImage(file);
+        authService.updateProfilePhoto(email, imageUrl);
+        
+        return ResponseEntity.ok(java.util.Map.of("url", imageUrl));
     }
 }

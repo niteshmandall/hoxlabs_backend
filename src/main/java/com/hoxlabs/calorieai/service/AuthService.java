@@ -70,8 +70,14 @@ public class AuthService {
                 .build();
     }
     
-    // updateProfile method (no changes needed)
-
+    public String updateProfilePhoto(String email, String photoUrl) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setProfilePhotoUrl(photoUrl);
+        userRepository.save(user);
+        return photoUrl;
+    }
+    
     public UserProfileDTO updateProfile(String email, com.hoxlabs.calorieai.dto.UpdateProfileRequest request) {
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));

@@ -152,6 +152,19 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 
   ```
 
+#### 5. Upload Profile Image
+
+**Endpoint**: `POST /api/user/profile-image`
+
+- **Content-Type**: `multipart/form-data`
+- **Request Part**: `image` (The image file)
+- **Response**:
+  ```json
+  {
+    "url": "/uploads/d8a1...png"
+  }
+  ```
+
 ### 🍛 Meals
 
 > **Note**: All Meal and Dashboard endpoints require the `Authorization` header:

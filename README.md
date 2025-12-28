@@ -51,6 +51,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   ```json
   {
     "token": "eyJhbGciOiJIUzI1NiJ9...",
+    "refreshToken": "d8a1...",
     "user": {
       "id": 123,
       "name": "Alex",
@@ -76,6 +77,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   ```json
   {
     "token": "eyJhbGciOiJIUzI1NiJ9...",
+    "refreshToken": "d8a1...",
     "user": {
       "id": 123,
       "name": "Alex",
@@ -86,7 +88,25 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   }
   ```
 
-#### 3. Get User Profile
+#### 3. Refresh Access Token (NEW)
+
+**Endpoint**: `POST /api/auth/refresh-token`
+
+- **Request Body**:
+  ```json
+  {
+    "refreshToken": "d8a1..."
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+    "refreshToken": "d8a1..."
+  }
+  ```
+
+#### 4. Get User Profile
 
 **Endpoint**: `GET /api/user/profile`
 
@@ -127,6 +147,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   }
   ```
 - **Response**: Returns the updated User Profile (same JSON structure as Get Profile).
+
   ```
 
   ```

@@ -31,4 +31,11 @@ public class AuthController {
     ) {
         return ResponseEntity.ok(authService.authenticate(request));
     }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<com.hoxlabs.calorieai.dto.TokenRefreshResponse> refreshToken(
+            @RequestBody com.hoxlabs.calorieai.dto.TokenRefreshRequest request
+    ) {
+        return ResponseEntity.ok(authService.refreshToken(request));
+    }
 }

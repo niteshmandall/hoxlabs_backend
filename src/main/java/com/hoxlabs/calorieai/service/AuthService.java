@@ -22,6 +22,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthenticationResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -43,6 +44,8 @@ public class AuthService {
 
         userRepository.save(user);
         var jwtToken = jwtUtil.generateToken(user);
+        var refreshToken = refreshTokenService.createRefreshToken(user.getId()); // Create Refresh Token
+
         var userProfile = UserProfileDTO.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -62,9 +65,12 @@ public class AuthService {
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .refreshToken(refreshToken.getToken())
                 .user(userProfile)
                 .build();
     }
+    
+    // updateProfile method (no changes needed)
 
     public UserProfileDTO updateProfile(String email, com.hoxlabs.calorieai.dto.UpdateProfileRequest request) {
         var user = userRepository.findByEmail(email)
@@ -113,6 +119,8 @@ public class AuthService {
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow();
         var jwtToken = jwtUtil.generateToken(user);
+        var refreshToken = refreshTokenService.createRefreshToken(user.getId()); // Create Refresh Token
+        
         var userProfile = UserProfileDTO.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -132,7 +140,24 @@ public class AuthService {
 
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .refreshToken(refreshToken.getToken())
                 .user(userProfile)
                 .build();
+    }
+
+    public com.hoxlabs.calorieai.dto.TokenRefreshResponse refreshToken(com.hoxlabs.calorieai.dto.TokenRefreshRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(com.hoxlabs.calorieai.entity.RefreshToken::getUser)
+                .map(user -> {
+                    String token = jwtUtil.generateToken(user);
+                    return com.hoxlabs.calorieai.dto.TokenRefreshResponse.builder()
+                            .accessToken(token)
+                            .refreshToken(requestRefreshToken)
+                            .build();
+                })
+                .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
     }
 }

@@ -75,7 +75,8 @@ class MealServiceTest {
         org.mockito.ArgumentCaptor<MealLog> logCaptor = org.mockito.ArgumentCaptor.forClass(MealLog.class);
         verify(mealLogRepository).save(logCaptor.capture());
         MealLog capturedLog = logCaptor.getValue();
-        assertEquals("https://image.pollinations.ai/prompt/Test", capturedLog.getImageUrl());
+        // Prompt is now prefixed
+        assertEquals("https://image.pollinations.ai/prompt/Delicious+food+photography+of+Test", capturedLog.getImageUrl());
 
         verify(foodItemRepository).saveAll(anyList());
         verify(nutritionSummaryRepository).findByUserIdAndDate(eq(1L), any(LocalDate.class));
@@ -119,6 +120,7 @@ class MealServiceTest {
         
         assertNotNull(res);
         assertEquals(0, res.getTotalCalories());
+        assertNull(res.getImageUrl(), "Image URL should be null when no food items are found");
         verify(foodItemRepository).saveAll(anyList()); // Validates it doesn't crash on empty list
     }
     

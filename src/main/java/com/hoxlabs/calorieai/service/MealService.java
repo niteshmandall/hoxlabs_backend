@@ -51,10 +51,13 @@ public class MealService {
         mealLog.setTimestamp(LocalDateTime.now());
         mealLog.setRawText(request.getText());
         
-        // Generate Image URL using Pollinations.ai
-        String encodedPrompt = URLEncoder.encode(request.getText(), StandardCharsets.UTF_8);
-        String imageUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt;
-        mealLog.setImageUrl(imageUrl);
+        // Generate Image URL using Pollinations.ai ONLY if food items are found
+        if (itemCount > 0) {
+            String prompt = "Delicious food photography of " + request.getText();
+            String encodedPrompt = URLEncoder.encode(prompt, StandardCharsets.UTF_8);
+            String imageUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt;
+            mealLog.setImageUrl(imageUrl);
+        }
         
         mealLog = mealLogRepository.save(mealLog);
 

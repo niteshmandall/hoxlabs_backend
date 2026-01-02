@@ -19,6 +19,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +50,12 @@ public class MealService {
         mealLog.setMealType(request.getMealType());
         mealLog.setTimestamp(LocalDateTime.now());
         mealLog.setRawText(request.getText());
+        
+        // Generate Image URL using Pollinations.ai
+        String encodedPrompt = URLEncoder.encode(request.getText(), StandardCharsets.UTF_8);
+        String imageUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt;
+        mealLog.setImageUrl(imageUrl);
+        
         mealLog = mealLogRepository.save(mealLog);
 
         // 3. Save Food Items
@@ -81,6 +89,7 @@ public class MealService {
         return MealLogResponse.builder()
                 .id(mealLog.getId())
                 .text(mealLog.getRawText())
+                .imageUrl(mealLog.getImageUrl())
                 .timestamp(mealLog.getTimestamp())
                 .foodItems(aiResponse.getFoodItems())
                 .totalCalories(totalCalories)
@@ -124,6 +133,7 @@ public class MealService {
              return MealLogResponse.builder()
                      .id(log.getId())
                      .text(log.getRawText())
+                     .imageUrl(log.getImageUrl())
                      .timestamp(log.getTimestamp())
                      .foodItems(itemDtos)
                      .totalCalories(totalCals)

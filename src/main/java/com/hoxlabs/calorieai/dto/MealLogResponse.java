@@ -15,6 +15,7 @@ import java.util.List;
 public class MealLogResponse {
     private Long id;
     private String text;
+    private String imageUrl;
     private LocalDateTime timestamp;
     private List<AiNutritionResponse.FoodItemDto> foodItems;
     private Integer totalCalories;

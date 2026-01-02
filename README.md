@@ -9,6 +9,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   - Strict JSON Schema Validation.
   - Specialized Rule Sets: Indian portion estimations, conservative oil usage.
   - Edge Case Handling: Smart defaults for vague inputs, fast food, and homemade dishes.
+- **AI Meal Image Generation**: Automatically generates visual representations of your meals using Pollinations.ai.
 - **Meal History**: View complete chat history of past logged meals and AI responses.
 - **User Authentication**: Secure JWT-based registration and login system.
 - **Daily Dashboard**: Aggregates daily nutritional intake against user specific calorie goals.
@@ -181,6 +182,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   {
     "id": 1,
     "text": "I had 2 idlis and sambar",
+    "imageUrl": "https://image.pollinations.ai/prompt/I%20had%202%20idlis%20and%20sambar",
     "timestamp": "2023-10-27T08:30:00",
     "foodItems": [
       {
@@ -207,11 +209,13 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
     {
       "id": 2,
       "text": "Chicken Curry",
+      "imageUrl": "https://image.pollinations.ai/prompt/Chicken%20Curry",
       ...
     },
     {
       "id": 1,
       "text": "2 Idlis",
+      "imageUrl": "https://image.pollinations.ai/prompt/2%20Idlis",
       ...
     }
   ]

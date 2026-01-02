@@ -32,6 +32,9 @@ public class MealLog {
     @Column(columnDefinition = "TEXT")
     private String rawText; // The original text user entered e.g. "2 rotis"
 
+    @Column(columnDefinition = "TEXT")
+    private String imageUrl;
+
     @OneToMany(mappedBy = "mealLog", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private java.util.List<FoodItem> foodItems = new java.util.ArrayList<>();
 }

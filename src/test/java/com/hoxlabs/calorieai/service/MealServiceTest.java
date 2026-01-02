@@ -70,6 +70,13 @@ class MealServiceTest {
         assertNotNull(res);
         assertEquals(100L, res.getId());
         assertEquals(100, res.getTotalCalories());
+        
+        // strict check for image url generation
+        org.mockito.ArgumentCaptor<MealLog> logCaptor = org.mockito.ArgumentCaptor.forClass(MealLog.class);
+        verify(mealLogRepository).save(logCaptor.capture());
+        MealLog capturedLog = logCaptor.getValue();
+        assertEquals("https://image.pollinations.ai/prompt/Test", capturedLog.getImageUrl());
+
         verify(foodItemRepository).saveAll(anyList());
         verify(nutritionSummaryRepository).findByUserIdAndDate(eq(1L), any(LocalDate.class));
     }
@@ -138,6 +145,7 @@ class MealServiceTest {
         log1.setId(1L);
         log1.setRawText("Meal 1");
         log1.setTimestamp(java.time.LocalDateTime.now());
+        log1.setImageUrl("http://img.url");
         log1.setFoodItems(Collections.emptyList());
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
@@ -150,6 +158,7 @@ class MealServiceTest {
         assertNotNull(history);
         assertEquals(1, history.size());
         assertEquals("Meal 1", history.get(0).getText());
+        assertEquals("http://img.url", history.get(0).getImageUrl());
         verify(mealLogRepository).findAllByUserOrderByTimestampDesc(user);
     }
 }

@@ -48,6 +48,7 @@ class MealControllerIntegrationTest {
         MealLogResponse response = MealLogResponse.builder()
                 .id(1L)
                 .text("Test Meal")
+                .imageUrl("http://test.image/url")
                 .foodItems(List.of(new AiNutritionResponse.FoodItemDto("Test Food", "1 serving", 100, 10.0, 10.0, 5.0)))
                 .totalCalories(100)
                 .build();
@@ -60,7 +61,8 @@ class MealControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.text").value("Test Meal"));
+                .andExpect(jsonPath("$.text").value("Test Meal"))
+                .andExpect(jsonPath("$.imageUrl").value("http://test.image/url"));
     }
 
     @Test
@@ -94,6 +96,7 @@ class MealControllerIntegrationTest {
         MealLogResponse response = MealLogResponse.builder()
                 .id(1L)
                 .text("History Meal")
+                .imageUrl("http://history.image/url")
                 .foodItems(List.of(new AiNutritionResponse.FoodItemDto("History Food", "1 serving", 200, 20.0, 20.0, 10.0)))
                 .totalCalories(200)
                 .build();
@@ -105,6 +108,7 @@ class MealControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
-                .andExpect(jsonPath("$[0].text").value("History Meal"));
+                .andExpect(jsonPath("$[0].text").value("History Meal"))
+                .andExpect(jsonPath("$[0].imageUrl").value("http://history.image/url"));
     }
 }

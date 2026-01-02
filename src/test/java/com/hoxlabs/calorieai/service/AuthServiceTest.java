@@ -31,6 +31,7 @@ class AuthServiceTest {
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtUtil jwtUtil;
     @Mock private AuthenticationManager authenticationManager;
+    @Mock private RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private AuthService authService;
@@ -39,11 +40,16 @@ class AuthServiceTest {
 
     @Test
     void register_ShouldReturnToken_WhenUserIsNew() {
-        RegisterRequest request = new RegisterRequest("new@test.com", "pass", 2000);
+        RegisterRequest request = RegisterRequest.builder()
+                .email("new@test.com")
+                .password("pass")
+                .calorieGoal(2000)
+                .build();
         when(userRepository.existsByEmail(any())).thenReturn(false);
         when(passwordEncoder.encode(any())).thenReturn("encoded");
         when(jwtUtil.generateToken(any())).thenReturn("jwt");
         when(userRepository.save(any())).thenReturn(new User());
+        when(refreshTokenService.createRefreshToken(any())).thenReturn(com.hoxlabs.calorieai.entity.RefreshToken.builder().token("refresh-token").build());
 
         AuthenticationResponse res = authService.register(request);
         assertNotNull(res);
@@ -52,7 +58,11 @@ class AuthServiceTest {
 
     @Test
     void register_ShouldThrowException_WhenUserExists() {
-        RegisterRequest request = new RegisterRequest("exist@test.com", "pass", 2000);
+        RegisterRequest request = RegisterRequest.builder()
+                .email("exist@test.com")
+                .password("pass")
+                .calorieGoal(2000)
+                .build();
         when(userRepository.existsByEmail(any())).thenReturn(true);
 
         assertThrows(RuntimeException.class, () -> authService.register(request));
@@ -68,6 +78,7 @@ class AuthServiceTest {
         
         when(userRepository.findByEmail(req.getEmail())).thenReturn(Optional.of(user));
         when(jwtUtil.generateToken(user)).thenReturn("jwt");
+        when(refreshTokenService.createRefreshToken(any())).thenReturn(com.hoxlabs.calorieai.entity.RefreshToken.builder().token("refresh-token").build());
 
         AuthenticationResponse res = authService.authenticate(req);
         assertNotNull(res);

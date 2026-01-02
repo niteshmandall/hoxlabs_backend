@@ -28,6 +28,9 @@ spring:
     enabled: false
     baseline-on-migrate: true
 
+file:
+  upload-dir: uploads
+
 server:
   port: 8080
 

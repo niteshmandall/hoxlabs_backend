@@ -54,6 +54,6 @@ class DashboardControllerIntegrationTest {
     void getDailySummary_ShouldReturnForbidden_WhenUserIsNotAuthenticated() throws Exception {
         mockMvc.perform(get("/api/dashboard/daily")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }

@@ -13,20 +13,43 @@ import java.util.UUID;
 @Service
 public class ImageService {
 
-    private final Path uploadDir = Paths.get("uploads");
+    @Value("${file.upload-dir}")
+    private String uploadDirStr;
 
-    public ImageService() {
+    private Path rootLocation;
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
         try {
-            Files.createDirectories(uploadDir);
+            this.rootLocation = Paths.get(uploadDirStr);
+            Files.createDirectories(rootLocation);
         } catch (IOException e) {
             throw new RuntimeException("Could not create upload directory", e);
         }
     }
 
-    public String saveImage(MultipartFile file) throws IOException {
-        String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        Path filePath = uploadDir.resolve(filename);
-        Files.copy(file.getInputStream(), filePath);
-        return "/uploads/" + filename;
+    public String saveProfileImage(MultipartFile file, Long userId) throws IOException {
+        // Create user-specific directory: uploads/users/{id}
+        Path userDir = rootLocation.resolve("users").resolve(String.valueOf(userId));
+        if (!Files.exists(userDir)) {
+            Files.createDirectories(userDir);
+        }
+
+        // Use a fixed filename "profile.jpg" (or preserve extension if preferred, but fixed is easier for overwrite)
+        // For better compatibility, let's try to preserve extension or default to jpg
+        String originalFilename = file.getOriginalFilename();
+        String extension = "jpg";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+        }
+        
+        String filename = "profile." + extension;
+        Path destinationFile = userDir.resolve(filename);
+
+        // Copy file, overwriting existing
+        Files.copy(file.getInputStream(), destinationFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+        // Return relative URL
+        return "/uploads/users/" + userId + "/" + filename;
     }
 }

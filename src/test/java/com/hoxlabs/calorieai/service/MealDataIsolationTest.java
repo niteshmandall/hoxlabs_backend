@@ -48,7 +48,7 @@ public class MealDataIsolationTest {
         userRepository.save(userB);
 
         // Mock AI Service
-        when(aiNutritionService.analyzeMeal(anyString())).thenReturn(new AiNutritionResponse(Collections.emptyList(), 1.0));
+        when(aiNutritionService.analyzeMeal(anyString())).thenReturn(new AiNutritionResponse(Collections.emptyList(), new AiNutritionResponse.TotalsDto(100, 10.0, 10.0, 5.0), "high", null));
 
         // 2. Log Meal for User A
         MealLogRequest reqA = new MealLogRequest("Meal A", MealType.LUNCH);

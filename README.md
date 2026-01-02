@@ -161,7 +161,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 - **Response**:
   ```json
   {
-    "url": "/uploads/d8a1...png"
+    "url": "/uploads/users/123/profile.jpg"
   }
   ```
 

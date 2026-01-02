@@ -1,3 +1,5 @@
+package com.hoxlabs.calorieai.controller;
+
 import com.hoxlabs.calorieai.dto.UpdateProfileRequest;
 import com.hoxlabs.calorieai.dto.UserProfileDTO;
 import com.hoxlabs.calorieai.entity.User;
@@ -59,8 +61,10 @@ public class UserController {
     ) throws java.io.IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         
-        String imageUrl = imageService.saveImage(file);
+        String imageUrl = imageService.saveProfileImage(file, user.getId());
         authService.updateProfilePhoto(email, imageUrl);
         
         return ResponseEntity.ok(java.util.Map.of("url", imageUrl));

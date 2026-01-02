@@ -111,7 +111,6 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 **Endpoint**: `GET /api/user/profile`
 
 - **Response**:
-- **Response**:
   ```json
   {
     "id": 123,
@@ -131,7 +130,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   }
   ```
 
-#### 4. Update User Profile
+#### 5. Update User Profile
 
 **Endpoint**: `PUT /api/user/profile`
 
@@ -148,11 +147,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   ```
 - **Response**: Returns the updated User Profile (same JSON structure as Get Profile).
 
-  ```
-
-  ```
-
-#### 5. Upload Profile Image
+#### 6. Upload Profile Image
 
 **Endpoint**: `POST /api/user/profile-image`
 
@@ -170,7 +165,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 > **Note**: All Meal and Dashboard endpoints require the `Authorization` header:
 > `Authorization: Bearer <your_jwt_token>`
 
-#### 4. Log a Meal (AI Analysis)
+#### 7. Log a Meal (AI Analysis)
 
 **Endpoint**: `POST /api/meals/log`
 
@@ -202,7 +197,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   }
   ```
 
-#### 5. Get Meal History
+#### 8. Get Meal History
 
 **Endpoint**: `GET /api/meals/history`
 
@@ -222,7 +217,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   ]
   ```
 
-#### 6. Delete a Meal
+#### 9. Delete a Meal
 
 **Endpoint**: `DELETE /api/meals/{id}`
 
@@ -231,7 +226,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 
 ### 📊 Dashboard
 
-#### 6. Get Daily Summary
+#### 10. Get Daily Summary
 
 **Endpoint**: `GET /api/dashboard/daily`
 
@@ -256,7 +251,8 @@ The project includes a unified test suite that runs all Unit, Integration, and v
 **Run All Tests:**
 
 ```bash
-mvn test -Dtest=CalorieAiTestSuite
+# Ensure you clean and install to recompile changed files
+mvn clean test -Dtest=CalorieAiTestSuite
 ```
 
 ## 🏃‍♂️ Running Locally
@@ -291,7 +287,8 @@ src/main/java/com/hoxlabs/calorieai
 ├── exception/       # Global Error Handling
 ├── repository/      # Data Access Interfaces
 ├── security/        # JWT Filter & Util
-└── service/         # Business Logic & AI Integration
+├── service/         # Business Logic & AI Integration
+└── utils/           # Utility Classes
 ```
 
 ---

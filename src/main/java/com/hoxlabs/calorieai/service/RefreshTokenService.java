@@ -24,14 +24,13 @@ public class RefreshTokenService {
 
     @Transactional
     public RefreshToken createRefreshToken(Long userId) {
-        // Delete existing token if exists (Single session per user simplicity for now)
-        deleteByUserId(userId);
+        RefreshToken refreshToken = refreshTokenRepository.findByUser(userRepository.findById(userId).get())
+                .orElse(RefreshToken.builder()
+                        .user(userRepository.findById(userId).get())
+                        .build());
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .user(userRepository.findById(userId).get())
-                .token(UUID.randomUUID().toString())
-                .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs))
-                .build();
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
 
         return refreshTokenRepository.save(refreshToken);
     }

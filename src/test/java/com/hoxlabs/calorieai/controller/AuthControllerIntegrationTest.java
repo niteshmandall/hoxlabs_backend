@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoxlabs.calorieai.dto.AuthenticationRequest;
 import com.hoxlabs.calorieai.dto.AuthenticationResponse;
 import com.hoxlabs.calorieai.dto.RegisterRequest;
+import com.hoxlabs.calorieai.dto.TokenRefreshRequest;
+import com.hoxlabs.calorieai.dto.TokenRefreshResponse;
 import com.hoxlabs.calorieai.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,5 +92,24 @@ class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest()); 
+    }
+    @Test
+    void refreshToken_ShouldReturnNewToken_WhenRefreshTokenIsValid() throws Exception {
+        TokenRefreshRequest request = new TokenRefreshRequest();
+        request.setRefreshToken("valid-refresh-token");
+
+        TokenRefreshResponse response = TokenRefreshResponse.builder()
+                .accessToken("new-access-token")
+                .refreshToken("new-refresh-token")
+                .build();
+
+        when(authService.refreshToken(any(TokenRefreshRequest.class))).thenReturn(response);
+
+        mockMvc.perform(post("/api/auth/refresh-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("new-access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("new-refresh-token"));
     }
 }

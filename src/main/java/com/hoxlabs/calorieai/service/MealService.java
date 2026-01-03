@@ -33,12 +33,15 @@ public class MealService {
     private final UserRepository userRepository;
     private final AiNutritionService aiNutritionService;
 
+    @org.springframework.beans.factory.annotation.Value("${pollinations.api-key}")
+    private String apiKey;
+
     @Transactional
     public MealLogResponse logMeal(String userEmail, MealLogRequest request) throws JsonProcessingException {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 1. Analyze with AI
+        // 1. Analyze with AI (Synchronous)
         log.info("Analyzing meal for user: {}, text: {}", userEmail, request.getText());
         AiNutritionResponse aiResponse = aiNutritionService.analyzeMeal(request.getText());
         int itemCount = (aiResponse.getFoodItems() != null) ? aiResponse.getFoodItems().size() : 0;
@@ -51,11 +54,13 @@ public class MealService {
         mealLog.setTimestamp(LocalDateTime.now());
         mealLog.setRawText(request.getText());
         
-        // Generate Image URL using Pollinations.ai ONLY if food items are found
-        if (itemCount > 0) {
+        // Generate Image URL (Instant)
+        if (request.getText() != null && !request.getText().isEmpty()) {
             String prompt = "Delicious food photography of " + request.getText();
             String encodedPrompt = URLEncoder.encode(prompt, StandardCharsets.UTF_8);
-            String imageUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt;
+            // Enhanced Image Generation URL with Turbo model + API Key
+            String imageUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt + 
+                              "?model=turbo&width=1024&height=1024&enhance=true&nologo=true&api_key=" + apiKey;
             mealLog.setImageUrl(imageUrl);
         }
         
@@ -68,22 +73,24 @@ public class MealService {
         double totalCarbs = 0;
         double totalFat = 0;
 
-        for (AiNutritionResponse.FoodItemDto dto : aiResponse.getFoodItems()) {
-            FoodItem item = new FoodItem();
-            item.setMealLog(mealLog);
-            item.setName(dto.getName());
-            item.setCalories(dto.getCalories());
-            item.setProtein(dto.getProtein());
-            item.setCarbs(dto.getCarbs());
-            item.setFat(dto.getFat());
-            foodItems.add(item);
-
-            totalCalories += dto.getCalories();
-            totalProtein += dto.getProtein();
-            totalCarbs += dto.getCarbs();
-            totalFat += dto.getFat();
+        if (aiResponse.getFoodItems() != null) {
+            for (AiNutritionResponse.FoodItemDto dto : aiResponse.getFoodItems()) {
+                FoodItem item = new FoodItem();
+                item.setMealLog(mealLog);
+                item.setName(dto.getName());
+                item.setCalories(dto.getCalories());
+                item.setProtein(dto.getProtein());
+                item.setCarbs(dto.getCarbs());
+                item.setFat(dto.getFat());
+                foodItems.add(item);
+    
+                totalCalories += dto.getCalories();
+                totalProtein += dto.getProtein();
+                totalCarbs += dto.getCarbs();
+                totalFat += dto.getFat();
+            }
+            foodItemRepository.saveAll(foodItems);
         }
-        foodItemRepository.saveAll(foodItems);
 
         // 4. Update Nutrition Summary
         updateNutritionSummary(user, totalCalories, totalProtein, totalCarbs, totalFat);

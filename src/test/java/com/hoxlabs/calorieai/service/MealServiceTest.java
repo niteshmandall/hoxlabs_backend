@@ -47,6 +47,8 @@ class MealServiceTest {
     @Test
     void logMeal_ShouldSaveLogAndItems_WhenUserExists() throws JsonProcessingException {
         // Setup
+        org.springframework.test.util.ReflectionTestUtils.setField(mealService, "apiKey", "test-key");
+        
         String email = "test@example.com";
         User user = new User(); user.setId(1L); user.setEmail(email);
         MealLogRequest req = new MealLogRequest("Test", MealType.LUNCH);
@@ -76,7 +78,7 @@ class MealServiceTest {
         verify(mealLogRepository).save(logCaptor.capture());
         MealLog capturedLog = logCaptor.getValue();
         // Prompt is now prefixed
-        assertEquals("https://image.pollinations.ai/prompt/Delicious+food+photography+of+Test", capturedLog.getImageUrl());
+        assertEquals("https://image.pollinations.ai/prompt/Delicious+food+photography+of+Test?model=turbo&width=1024&height=1024&enhance=true&nologo=true&api_key=test-key", capturedLog.getImageUrl());
 
         verify(foodItemRepository).saveAll(anyList());
         verify(nutritionSummaryRepository).findByUserIdAndDate(eq(1L), any(LocalDate.class));

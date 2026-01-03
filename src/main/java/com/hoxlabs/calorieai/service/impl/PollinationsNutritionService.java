@@ -26,8 +26,8 @@ public class PollinationsNutritionService implements AiNutritionService {
     private final ObjectMapper objectMapper;
 
     // Pollinations.ai OpenAI-compatible endpoint
-    private static final String POLLINATIONS_URL = "https://text.pollinations.ai/openai";
-    private static final String MODEL = "openai"; 
+    private static final String POLLINATIONS_URL = "https://gen.pollinations.ai/v1/chat/completions";
+    private static final String MODEL = "openai-fast"; 
 
     // 1. System Prompt (Set Once)
     private static final String SYSTEM_PROMPT = 
@@ -61,6 +61,9 @@ public class PollinationsNutritionService implements AiNutritionService {
             "  \"clarification\": \"string (optional)\"\n" +
             "}";
 
+    @org.springframework.beans.factory.annotation.Value("${pollinations.api-key}")
+    private String apiKey;
+
     @Override
     public AiNutritionResponse analyzeMeal(String mealText) throws JsonProcessingException {
         // Build request body per OpenAI Chat Completion format
@@ -86,7 +89,7 @@ public class PollinationsNutritionService implements AiNutritionService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth("dummy-key"); // Pollinations compatibility
+        headers.setBearerAuth(apiKey);
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 

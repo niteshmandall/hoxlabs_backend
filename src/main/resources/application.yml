@@ -19,7 +19,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-    show-sql: true
+    #    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -45,6 +45,9 @@ openai:
 
 gemini:
   api-key: dummy-gemini-key
+
+pollinations:
+  api-key: ${POLLINATIONS_API_KEY}
 
 management:
   endpoints:

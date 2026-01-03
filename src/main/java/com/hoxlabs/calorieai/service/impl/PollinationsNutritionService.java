@@ -65,7 +65,9 @@ public class PollinationsNutritionService implements AiNutritionService {
     private String apiKey;
 
     @Override
+    @org.springframework.cache.annotation.Cacheable(value = "nutritionCache", key = "#mealText.hashCode()")
     public AiNutritionResponse analyzeMeal(String mealText) throws JsonProcessingException {
+        log.info("Analyzing meal (Cache Miss): {}", mealText.length() > 50 ? mealText.substring(0, 50) + "..." : mealText);
         // Build request body per OpenAI Chat Completion format
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", MODEL);

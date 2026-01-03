@@ -25,3 +25,6 @@ openai:
   model: gpt-3.5-turbo
 gemini:
   api-key: dummy-test-key
+
+pollinations:
+  api-key: dummy-test-key

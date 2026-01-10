@@ -61,7 +61,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            log.warn("Failed to process JWT: {}. Proceeding with unauthenticated request.", e.getMessage());
+            String path = request.getServletPath();
+            if (!path.equals("/api/auth/refresh-token")) {
+                 log.warn("Failed to process JWT: {}. Path: {}. Proceeding with unauthenticated request.", e.getMessage(), path);
+            } else {
+                 log.debug("Expired JWT on refresh endpoint. Ignoring.");
+            }
             // Do NOT return specific error here. Let Spring Security handle it.
             // This allows requests to /api/auth/refresh-token to proceed even if the header has an expired token.
         }

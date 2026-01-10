@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -155,9 +156,13 @@ public class AuthService {
 
     public com.hoxlabs.calorieai.dto.TokenRefreshResponse refreshToken(com.hoxlabs.calorieai.dto.TokenRefreshRequest request) {
         String requestRefreshToken = request.getRefreshToken();
+        // log.info("Attempting to refresh token: {}", requestRefreshToken); // Sensitive
 
         return refreshTokenService.findByToken(requestRefreshToken)
-                .map(refreshTokenService::verifyExpiration)
+                .map(token -> {
+                    // log.info("RefreshToken found in DB for user: {}", token.getUser().getEmail());
+                    return refreshTokenService.verifyExpiration(token);
+                })
                 .map(com.hoxlabs.calorieai.entity.RefreshToken::getUser)
                 .map(user -> {
                     String token = jwtUtil.generateToken(user);

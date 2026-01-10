@@ -52,7 +52,12 @@ public class MealService {
         MealLog mealLog = new MealLog();
         mealLog.setUser(user);
         mealLog.setMealType(request.getMealType());
-        mealLog.setTimestamp(LocalDateTime.now());
+        
+        LocalDateTime timestamp = (request.getDate() != null) 
+                ? request.getDate().atTime(LocalDateTime.now().toLocalTime()) 
+                : LocalDateTime.now();
+        mealLog.setTimestamp(timestamp);
+        
         mealLog.setRawText(request.getText());
         
         // Generate Image URL (Instant)
@@ -94,7 +99,7 @@ public class MealService {
         }
 
         // 4. Update Nutrition Summary
-        updateNutritionSummary(user, totalCalories, totalProtein, totalCarbs, totalFat);
+        updateNutritionSummary(user, totalCalories, totalProtein, totalCarbs, totalFat, mealLog.getTimestamp().toLocalDate());
 
         // 5. Build Response
         MealLogResponse response = MealLogResponse.builder()
@@ -107,7 +112,7 @@ public class MealService {
                 .build();
                 
         // Evict Caches
-        evictCaches(user.getEmail(), LocalDate.now());
+        evictCaches(user.getEmail(), mealLog.getTimestamp().toLocalDate());
         
         return response;
     }
@@ -121,10 +126,9 @@ public class MealService {
         }
     }
 
-    private void updateNutritionSummary(User user, int calories, double protein, double carbs, double fat) {
-        LocalDate today = LocalDate.now();
-        NutritionSummary summary = nutritionSummaryRepository.findByUserIdAndDate(user.getId(), today)
-                .orElse(new NutritionSummary(null, user, today, 0, 0.0, 0.0, 0.0));
+    private void updateNutritionSummary(User user, int calories, double protein, double carbs, double fat, LocalDate date) {
+        NutritionSummary summary = nutritionSummaryRepository.findByUserIdAndDate(user.getId(), date)
+                .orElse(new NutritionSummary(null, user, date, 0, 0.0, 0.0, 0.0));
 
         summary.setTotalCalories(summary.getTotalCalories() + calories);
         summary.setTotalProtein(summary.getTotalProtein() + protein);

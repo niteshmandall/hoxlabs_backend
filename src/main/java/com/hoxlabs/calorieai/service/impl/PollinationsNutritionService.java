@@ -59,7 +59,41 @@ public class PollinationsNutritionService implements AiNutritionService {
             "  \"totals\": {\"calories\": int, \"protein\": double, \"carbs\": double, \"fat\": double},\n" +
             "  \"confidence\": \"high|medium|low\",\n" +
             "  \"clarification\": \"string (optional)\"\n" +
+            "  \"confidence\": \"high|medium|low\",\n" +
+            "  \"clarification\": \"string (optional)\"\n" +
             "}";
+
+    // 3. Coach System Prompt
+    private static final String COACH_SYSTEM_PROMPT = 
+            "You are a friendly and knowledgeable AI Health Coach. " +
+            "Your goal is to provide helpful, science-backed advice on nutrition and wellness. " +
+            "Do NOT attempt to calculate calories or log food. " +
+            "Focus on answering questions, suggesting healthy alternatives, and motivation. " +
+            "Keep answers concise and encouraging. " +
+            "Always return valid JSON. " +
+            "Schema: {\"message\": \"string\", \"is_logging_action\": boolean}";
+
+    // 4. Coach User Prompt Template
+    private static final String COACH_USER_PROMPT_TEMPLATE = 
+            "User Context: %s\n\n" +
+            "User Question: \"%s\"\n\n" +
+            "Provide a helpful response.";
+
+    // 3. Coach System Prompt
+    private static final String COACH_SYSTEM_PROMPT = 
+            "You are a friendly and knowledgeable AI Health Coach. " +
+            "Your goal is to provide helpful, science-backed advice on nutrition and wellness. " +
+            "Do NOT attempt to calculate calories or log food. " +
+            "Focus on answering questions, suggesting healthy alternatives, and motivation. " +
+            "Keep answers concise and encouraging. " +
+            "Always return valid JSON. " +
+            "Schema: {\"message\": \"string\", \"is_logging_action\": boolean}";
+
+    // 4. Coach User Prompt Template
+    private static final String COACH_USER_PROMPT_TEMPLATE = 
+            "User Context: %s\n\n" +
+            "User Question: \"%s\"\n\n" +
+            "Provide a helpful response.";
 
     @org.springframework.beans.factory.annotation.Value("${pollinations.api-key}")
     private String apiKey;
@@ -148,5 +182,51 @@ public class PollinationsNutritionService implements AiNutritionService {
         response.setClarification("AI Service unavailable, using mock data.");
         
         return response;
+    }
+
+    @Override
+    public com.hoxlabs.calorieai.dto.ChatResponse getHealthAdvice(String userContext, String question) {
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", MODEL);
+        
+        List<Map<String, String>> messages = new ArrayList<>();
+        
+        // System Message
+        Map<String, String> systemMsg = new HashMap<>();
+        systemMsg.put("role", "system");
+        systemMsg.put("content", COACH_SYSTEM_PROMPT);
+        messages.add(systemMsg);
+
+        // User Message
+        Map<String, String> userMsg = new HashMap<>();
+        userMsg.put("role", "user");
+        userMsg.put("content", String.format(COACH_USER_PROMPT_TEMPLATE, userContext, question));
+        messages.add(userMsg);
+        
+        requestBody.put("messages", messages);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+        try {
+            Map<String, Object> response = restTemplate.postForObject(POLLINATIONS_URL, entity, Map.class);
+            
+            if (response != null && response.containsKey("choices")) {
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                if (!choices.isEmpty()) {
+                    Map<String, Object> messageObj = (Map<String, Object>) choices.get(0).get("message");
+                    String content = (String) messageObj.get("content");
+                    content = cleanJsonContent(content);
+                    return objectMapper.readValue(content, com.hoxlabs.calorieai.dto.ChatResponse.class);
+                }
+            }
+        } catch (Exception e) {
+            log.error("AI Coach Error: {}", e.getMessage(), e);
+            return new com.hoxlabs.calorieai.dto.ChatResponse("I'm having trouble connecting to my brain right now, but remember: consistency is key!", false);
+        }
+        return new com.hoxlabs.calorieai.dto.ChatResponse("I couldn't process that request.", false);
     }
 }

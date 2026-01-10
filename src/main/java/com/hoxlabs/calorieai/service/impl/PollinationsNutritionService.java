@@ -59,8 +59,6 @@ public class PollinationsNutritionService implements AiNutritionService {
             "  \"totals\": {\"calories\": int, \"protein\": double, \"carbs\": double, \"fat\": double},\n" +
             "  \"confidence\": \"high|medium|low\",\n" +
             "  \"clarification\": \"string (optional)\"\n" +
-            "  \"confidence\": \"high|medium|low\",\n" +
-            "  \"clarification\": \"string (optional)\"\n" +
             "}";
 
     // 3. Coach System Prompt
@@ -79,21 +77,7 @@ public class PollinationsNutritionService implements AiNutritionService {
             "User Question: \"%s\"\n\n" +
             "Provide a helpful response.";
 
-    // 3. Coach System Prompt
-    private static final String COACH_SYSTEM_PROMPT = 
-            "You are a friendly and knowledgeable AI Health Coach. " +
-            "Your goal is to provide helpful, science-backed advice on nutrition and wellness. " +
-            "Do NOT attempt to calculate calories or log food. " +
-            "Focus on answering questions, suggesting healthy alternatives, and motivation. " +
-            "Keep answers concise and encouraging. " +
-            "Always return valid JSON. " +
-            "Schema: {\"message\": \"string\", \"is_logging_action\": boolean}";
 
-    // 4. Coach User Prompt Template
-    private static final String COACH_USER_PROMPT_TEMPLATE = 
-            "User Context: %s\n\n" +
-            "User Question: \"%s\"\n\n" +
-            "Provide a helpful response.";
 
     @org.springframework.beans.factory.annotation.Value("${pollinations.api-key}")
     private String apiKey;

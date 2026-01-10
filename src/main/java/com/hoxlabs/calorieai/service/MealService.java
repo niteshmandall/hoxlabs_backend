@@ -189,4 +189,30 @@ public class MealService {
         // Evict Caches
         evictCaches(userEmail, mealLog.getTimestamp().toLocalDate());
     }
+
+    public String getRecentNutritionSummaries(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        List<NutritionSummary> summaries = nutritionSummaryRepository.findTop7ByUserIdOrderByDateDesc(user.getId());
+        
+        if (summaries.isEmpty()) {
+            return "No recent nutrition history available.";
+        }
+        
+        StringBuilder sb = new StringBuilder("Recent Nutrition History (Last 7 Days):\n");
+        for (NutritionSummary s : summaries) {
+            sb.append(String.format("- Date: %s | Calories: %d | Protein: %.1fg | Carbs: %.1fg | Fat: %.1fg\n", 
+                    s.getDate(), s.getTotalCalories(), s.getTotalProtein(), s.getTotalCarbs(), s.getTotalFat()));
+        }
+        return sb.toString();
+    }
+
+    public com.hoxlabs.calorieai.dto.UserProfileDTO getUserProfile(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+        return com.hoxlabs.calorieai.dto.UserProfileDTO.builder()
+                .fitnessGoal(user.getFitnessGoal())
+                .calorieGoal(user.getCalorieGoal())
+                .build();
+    }
 }

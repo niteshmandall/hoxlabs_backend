@@ -27,10 +27,12 @@ public class ChatController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        // 1. Get recent context (yesterday/today)
-        List<MealLogResponse> history = mealService.getMealHistory(email);
-        String context = "User history (last few meals): " + 
-                history.stream().limit(5).map(m -> m.getText() + " (" + m.getTotalCalories() + " kcals)").collect(Collectors.joining(", "));
+        // 1. Get recent context (Last 7 Days Nutrition Summary)
+        String recentHistory = mealService.getRecentNutritionSummaries(email);
+        
+        String context = "User Profile Context: [Goal: " + mealService.getUserProfile(email).getFitnessGoal() + 
+                         ", Daily Calorie Goal: " + mealService.getUserProfile(email).getCalorieGoal() + "]\n\n" +
+                         recentHistory;
 
         // 2. Call AI Coach
         ChatResponse response = aiNutritionService.getHealthAdvice(context, request.getMessage());

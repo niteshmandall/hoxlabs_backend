@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface NutritionSummaryRepository extends JpaRepository<NutritionSummary, Long> {
     Optional<NutritionSummary> findByUserIdAndDate(Long userId, LocalDate date);
+    
+    java.util.List<NutritionSummary> findTop7ByUserIdOrderByDateDesc(Long userId);
 }

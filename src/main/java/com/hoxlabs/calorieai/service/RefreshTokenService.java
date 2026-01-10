@@ -24,13 +24,15 @@ public class RefreshTokenService {
 
     @Transactional
     public RefreshToken createRefreshToken(Long userId) {
-        RefreshToken refreshToken = refreshTokenRepository.findByUser(userRepository.findById(userId).get())
-                .orElse(RefreshToken.builder()
-                        .user(userRepository.findById(userId).get())
-                        .build());
+        // 1. Delete old token (Fixes Duplicate Key Error)
+        refreshTokenRepository.deleteByUser(userRepository.findById(userId).get());
 
-        refreshToken.setToken(UUID.randomUUID().toString());
-        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
+        // 2. Create new token
+        RefreshToken refreshToken = RefreshToken.builder()
+                .user(userRepository.findById(userId).get())
+                .token(UUID.randomUUID().toString())
+                .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs))
+                .build();
 
         return refreshTokenRepository.save(refreshToken);
     }

@@ -32,6 +32,7 @@ public class MealService {
     private final NutritionSummaryRepository nutritionSummaryRepository;
     private final UserRepository userRepository;
     private final AiNutritionService aiNutritionService;
+    private final org.springframework.cache.CacheManager cacheManager;
 
     @org.springframework.beans.factory.annotation.Value("${pollinations.api-key}")
     private String apiKey;
@@ -96,7 +97,7 @@ public class MealService {
         updateNutritionSummary(user, totalCalories, totalProtein, totalCarbs, totalFat);
 
         // 5. Build Response
-        return MealLogResponse.builder()
+        MealLogResponse response = MealLogResponse.builder()
                 .id(mealLog.getId())
                 .text(mealLog.getRawText())
                 .imageUrl(mealLog.getImageUrl())
@@ -104,6 +105,20 @@ public class MealService {
                 .foodItems(aiResponse.getFoodItems())
                 .totalCalories(totalCalories)
                 .build();
+                
+        // Evict Caches
+        evictCaches(user.getEmail(), LocalDate.now());
+        
+        return response;
+    }
+
+    private void evictCaches(String email, LocalDate date) {
+        if (cacheManager.getCache("mealHistory") != null) {
+            cacheManager.getCache("mealHistory").evict(email);
+        }
+        if (cacheManager.getCache("dailySummary") != null) {
+            cacheManager.getCache("dailySummary").evict(email + "_" + date);
+        }
     }
 
     private void updateNutritionSummary(User user, int calories, double protein, double carbs, double fat) {
@@ -119,7 +134,10 @@ public class MealService {
         nutritionSummaryRepository.save(summary);
     }
     
+
+    
     @Transactional(readOnly = true)
+    @org.springframework.cache.annotation.Cacheable(value = "mealHistory", key = "#userEmail")
     public List<MealLogResponse> getMealHistory(String userEmail) {
          User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -163,5 +181,8 @@ public class MealService {
         }
 
         mealLogRepository.delete(mealLog);
+        
+        // Evict Caches
+        evictCaches(userEmail, mealLog.getTimestamp().toLocalDate());
     }
 }

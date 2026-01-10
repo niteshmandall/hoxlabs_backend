@@ -14,6 +14,9 @@ import java.util.concurrent.TimeUnit;
 public class CacheConfig {
 
     public static final String NUTRITION_CACHE = "nutritionCache";
+    public static final String DAILY_SUMMARY = "dailySummary";
+    public static final String MEAL_HISTORY = "mealHistory";
+    public static final String USER_PROFILE = "userProfile";
 
     @Bean
     public Caffeine<Object, Object> caffeineConfig() {
@@ -26,7 +29,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager(Caffeine<Object, Object> caffeine) {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager(NUTRITION_CACHE);
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager(NUTRITION_CACHE, DAILY_SUMMARY, MEAL_HISTORY, USER_PROFILE);
         cacheManager.setCaffeine(caffeine);
         return cacheManager;
     }

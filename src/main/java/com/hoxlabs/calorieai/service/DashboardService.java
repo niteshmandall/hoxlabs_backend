@@ -16,6 +16,7 @@ public class DashboardService {
     private final NutritionSummaryRepository nutritionSummaryRepository;
     private final UserRepository userRepository;
 
+    @org.springframework.cache.annotation.Cacheable(value = "dailySummary", key = "#userEmail + '_' + #date")
     public NutritionSummary getDailySummary(String userEmail, LocalDate date) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));

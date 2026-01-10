@@ -70,6 +70,7 @@ public class AuthService {
                 .build();
     }
     
+    @org.springframework.cache.annotation.CacheEvict(value = "userProfile", key = "#email")
     public String updateProfilePhoto(String email, String photoUrl) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -78,6 +79,7 @@ public class AuthService {
         return photoUrl;
     }
     
+    @org.springframework.cache.annotation.CacheEvict(value = "userProfile", key = "#email")
     public UserProfileDTO updateProfile(String email, com.hoxlabs.calorieai.dto.UpdateProfileRequest request) {
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -165,5 +167,28 @@ public class AuthService {
                             .build();
                 })
                 .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
+    }
+
+    @org.springframework.cache.annotation.Cacheable(value = "userProfile", key = "#email")
+    public UserProfileDTO getUserProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return UserProfileDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .age(user.getAge())
+                .gender(user.getGender())
+                .weight(user.getWeight())
+                .height(user.getHeight())
+                .fitnessGoal(user.getFitnessGoal())
+                .calorieGoal(user.getCalorieGoal())
+                .profilePhotoUrl(user.getProfilePhotoUrl())
+                .proteinGoal(user.getProteinGoal())
+                .carbsGoal(user.getCarbsGoal())
+                .fatGoal(user.getFatGoal())
+                .role(user.getRole())
+                .build();
     }
 }

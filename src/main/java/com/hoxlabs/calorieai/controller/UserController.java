@@ -25,27 +25,9 @@ public class UserController {
     public ResponseEntity<UserProfileDTO> getUserProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return ResponseEntity.ok(authService.getUserProfile(email));
 
-        UserProfileDTO profile = UserProfileDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .age(user.getAge())
-                .gender(user.getGender())
-                .weight(user.getWeight())
-                .height(user.getHeight())
-                .fitnessGoal(user.getFitnessGoal())
-                .calorieGoal(user.getCalorieGoal())
-                .profilePhotoUrl(user.getProfilePhotoUrl())
-                .proteinGoal(user.getProteinGoal())
-                .carbsGoal(user.getCarbsGoal())
-                .fatGoal(user.getFatGoal())
-                .role(user.getRole())
-                .build();
 
-        return ResponseEntity.ok(profile);
     }
 
     @PutMapping("/profile")

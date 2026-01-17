@@ -24,8 +24,9 @@ public class RefreshTokenService {
 
     @Transactional
     public RefreshToken createRefreshToken(Long userId) {
-        // 1. Delete old token (Fixes Duplicate Key Error)
-        refreshTokenRepository.deleteByUser(userRepository.findById(userId).get());
+        // 1. Delete old token (Fixes Duplicate Key Error) - REMOVED for Multi-Device
+        // Login
+        // refreshTokenRepository.deleteByUser(userRepository.findById(userId).get());
 
         // 2. Create new token
         RefreshToken refreshToken = RefreshToken.builder()

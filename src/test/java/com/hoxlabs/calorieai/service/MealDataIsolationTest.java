@@ -51,11 +51,11 @@ public class MealDataIsolationTest {
         when(aiNutritionService.analyzeMeal(anyString())).thenReturn(new AiNutritionResponse(Collections.emptyList(), new AiNutritionResponse.TotalsDto(100, 10.0, 10.0, 5.0), "high", null));
 
         // 2. Log Meal for User A
-        MealLogRequest reqA = new MealLogRequest("Meal A", MealType.LUNCH);
+        MealLogRequest reqA = new MealLogRequest("Meal A", MealType.LUNCH, null);
         mealService.logMeal(userA.getEmail(), reqA);
 
         // 3. Log Meal for User B
-        MealLogRequest reqB = new MealLogRequest("Meal B", MealType.DINNER);
+        MealLogRequest reqB = new MealLogRequest("Meal B", MealType.DINNER, null);
         mealService.logMeal(userB.getEmail(), reqB);
 
         // 4. Fetch History for User A

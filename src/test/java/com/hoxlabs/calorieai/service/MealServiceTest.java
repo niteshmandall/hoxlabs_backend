@@ -51,7 +51,7 @@ class MealServiceTest {
         
         String email = "test@example.com";
         User user = new User(); user.setId(1L); user.setEmail(email);
-        MealLogRequest req = new MealLogRequest("Test", MealType.LUNCH);
+        MealLogRequest req = new MealLogRequest("Test", MealType.LUNCH, null);
         
         AiNutritionResponse aiRes = new AiNutritionResponse();
         aiRes.setFoodItems(List.of(new AiNutritionResponse.FoodItemDto("Food", "1 serving", 100, 10.0, 10.0, 5.0)));
@@ -99,7 +99,7 @@ class MealServiceTest {
         
         when(aiNutritionService.analyzeMeal(any())).thenThrow(new RuntimeException("AI Down"));
         
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> mealService.logMeal("test@example.com", new MealLogRequest("Text", MealType.SNACK)));
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> mealService.logMeal("test@example.com", new MealLogRequest("Text", MealType.SNACK, null)));
         assertEquals("AI Down", ex.getMessage());
     }
 
@@ -118,7 +118,7 @@ class MealServiceTest {
         when(aiNutritionService.analyzeMeal(any())).thenReturn(aiRes);
         when(mealLogRepository.save(any())).thenReturn(savedLog);
 
-        MealLogResponse res = mealService.logMeal(email, new MealLogRequest("Text", MealType.SNACK));
+        MealLogResponse res = mealService.logMeal(email, new MealLogRequest("Text", MealType.SNACK, null));
         
         assertNotNull(res);
         assertEquals(0, res.getTotalCalories());
@@ -134,7 +134,7 @@ class MealServiceTest {
         
         when(mealLogRepository.save(any())).thenThrow(new DataIntegrityViolationException("DB Error"));
         
-        assertThrows(DataIntegrityViolationException.class, () -> mealService.logMeal("test@example.com", new MealLogRequest("Text", MealType.SNACK)));
+        assertThrows(DataIntegrityViolationException.class, () -> mealService.logMeal("test@example.com", new MealLogRequest("Text", MealType.SNACK, null)));
     }
 
     // --- Get Meal History ---

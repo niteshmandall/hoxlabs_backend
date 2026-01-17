@@ -38,6 +38,7 @@ class MealServiceTest {
     @Mock private NutritionSummaryRepository nutritionSummaryRepository;
     @Mock private UserRepository userRepository;
     @Mock private AiNutritionService aiNutritionService;
+    @Mock private org.springframework.cache.CacheManager cacheManager;
 
     @InjectMocks
     private MealService mealService;
@@ -60,6 +61,7 @@ class MealServiceTest {
         savedLog.setId(100L);
         savedLog.setRawText("Test");
         savedLog.setMealType(MealType.LUNCH);
+        savedLog.setTimestamp(java.time.LocalDateTime.now());
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(aiNutritionService.analyzeMeal("Test")).thenReturn(aiRes);
@@ -113,6 +115,7 @@ class MealServiceTest {
         
         MealLog savedLog = new MealLog();
         savedLog.setId(100L);
+        savedLog.setTimestamp(java.time.LocalDateTime.now());
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(aiNutritionService.analyzeMeal(any())).thenReturn(aiRes);

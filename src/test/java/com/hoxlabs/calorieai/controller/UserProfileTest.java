@@ -59,6 +59,14 @@ class UserProfileTest {
         user.setProfilePhotoUrl("http://example.com/photo.jpg");
         userRepository.save(user);
 
+        UserProfileDTO profileDTO = UserProfileDTO.builder()
+                .email("profileuser@test.com")
+                .name("Test User")
+                .profilePhotoUrl("http://example.com/photo.jpg")
+                .build();
+
+        when(authService.getUserProfile("profileuser@test.com")).thenReturn(profileDTO);
+
         mockMvc.perform(get("/api/user/profile")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

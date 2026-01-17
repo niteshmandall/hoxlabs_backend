@@ -34,3 +34,11 @@ build/
 
 ### Secrets ###
 .env
+
+### Database Backups ###
+backups/
+backup_cron.log
+
+### Misc ###
+test.json
+.cloudflared/

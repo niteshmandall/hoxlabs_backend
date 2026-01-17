@@ -12,8 +12,8 @@ spring:
     # password:
     # PostgreSQL Configuration
     url: jdbc:postgresql://localhost:5432/calorieTracker
-    username: postgres
-    password: root
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -35,7 +35,7 @@ server:
   port: 8080
 
 jwt:
-  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
   expiration: 900000 # 15 minutes
   refresh-expiration: 604800000 # 7 days
 

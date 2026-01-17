@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    image: hoxlabs_backend-app
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/calorieTracker
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - POLLINATIONS_API_KEY=${POLLINATIONS_API_KEY}
+    depends_on:
+      - db
+    container_name: calorieai-backend
+    restart: always
+
+  db:
+    image: postgres:15-alpine
+    container_name: calorieai-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=calorieTracker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres_data:

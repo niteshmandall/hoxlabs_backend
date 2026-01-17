@@ -354,4 +354,38 @@ This application is ready for deployment on [Render](https://render.com).
 
 A `render.yaml` file is included for "Blueprint" deployments.
 
+
 <!-- CI/CD Test Trigger -->
+
+## 📊 Monitoring & Logs
+
+Essential commands for managing your production environment.
+
+### 1. Application Logs
+View real-time logs from the Spring Boot backend:
+```bash
+docker logs -f calorieai-backend
+```
+
+### 2. Database Logs
+View logs from the PostgreSQL database:
+```bash
+docker logs -f calorieai-db
+```
+
+### 3. Self-Hosted Runner Logs
+Check the status and logs of your GitHub Actions runner:
+```bash
+# Check service status
+sudo systemctl status "actions.runner.*"
+
+# View real-time logs
+sudo journalctl -u "actions.runner.*" -f
+```
+
+### 4. Cloudflare Tunnel Logs
+Check the status of the tunnel connecting your app to the internet:
+```bash
+sudo systemctl status cloudflared
+```
+

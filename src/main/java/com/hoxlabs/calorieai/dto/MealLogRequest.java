@@ -18,4 +18,6 @@ public class MealLogRequest {
 
     @NotNull(message = "Meal type is required")
     private MealType mealType;
+
+    private java.time.LocalDate date;
 }

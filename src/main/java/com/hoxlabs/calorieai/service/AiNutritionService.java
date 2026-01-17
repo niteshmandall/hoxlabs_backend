@@ -5,4 +5,5 @@ import com.hoxlabs.calorieai.dto.AiNutritionResponse;
 
 public interface AiNutritionService {
     AiNutritionResponse analyzeMeal(String mealText) throws JsonProcessingException;
+    com.hoxlabs.calorieai.dto.ChatResponse getHealthAdvice(String userContext, String question);
 }

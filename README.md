@@ -11,6 +11,9 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   - Edge Case Handling: Smart defaults for vague inputs, fast food, and homemade dishes.
 - **AI Meal Image Generation**: Automatically generates visual representations of your meals using Pollinations.ai.
 - **Meal History**: View complete chat history of past logged meals and AI responses.
+- **AI Health Coach**: Conversational mode for advice, tips, and motivation without logging calories. Now context-aware (knows your recent nutrition history).
+- **Date-Specific Meal Logging**: Log meals for past dates to keep your history accurate.
+- **Enhanced User Profile**: Track comprehensive stats including Age, Gender, Weight, Height, and Macro Goals.
 - **User Authentication**: Secure JWT-based registration and login system.
 - **Daily Dashboard**: Aggregates daily nutritional intake against user specific calorie goals.
 - **Robust Testing**: Comprehensive test suite covering Unit, Integration, and Edge Case scenarios (>35 tests).
@@ -45,7 +48,8 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
     "gender": "MALE",
     "weight": 70.5,
     "height": 175.0,
-    "fitnessGoal": "WEIGHT_LOSS"
+    "fitnessGoal": "WEIGHT_LOSS",
+    "profilePhotoUrl": "http://..."
   }
   ```
 - **Response**:
@@ -58,7 +62,16 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
       "name": "Alex",
       "email": "user@example.com",
       "age": 25,
-      ...
+      "age": 25,
+      "gender": "MALE",
+      "weight": 70.5,
+      "height": 175.0,
+      "fitnessGoal": "WEIGHT_LOSS",
+      "calorieGoal": 2000,
+      "proteinGoal": 150,
+      "carbsGoal": 200,
+      "fatGoal": 65,
+      "profilePhotoUrl": "http://..."
     }
   }
   ```
@@ -174,7 +187,8 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   ```json
   {
     "text": "I had 2 idlis and sambar",
-    "mealType": "BREAKFAST" // Options: BREAKFAST, LUNCH, DINNER, SNACK
+    "mealType": "BREAKFAST", // Options: BREAKFAST, LUNCH, DINNER, SNACK
+    "date": "2023-10-25" // Optional: For historic logging (YYYY-MM-DD)
   }
   ```
 - **Response**:
@@ -227,6 +241,28 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 
 - **Path Parameter**: `id` (ID of the meal to delete)
 - **Response**: `200 OK` (Empty body)
+
+### 💬 AI Coach
+
+#### 10. Get Health Advice
+
+**Endpoint**: `POST /api/chat/advice`
+
+- **Request Body**:
+  ```json
+  {
+    "message": "How can I get more protein as a vegetarian?"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "message": "You can try adding lentils, chickpeas, paneer, or soya chunks to your diet. Greek yogurt is also a great source!",
+    "is_logging_action": false
+  }
+  ```
+
+> **Context Awareness**: The backend automatically injects the user's last 7 days of nutrition summaries and their current goals into the prompt, so the AI can give personalized advice (e.g., "I see you've been low on protein this week...").
 
 ### 📊 Dashboard
 

@@ -353,3 +353,5 @@ This application is ready for deployment on [Render](https://render.com).
 4.  **Health Check**: Render should automatically detect `/actuator/health`.
 
 A `render.yaml` file is included for "Blueprint" deployments.
+
+<!-- CI/CD Test Trigger -->

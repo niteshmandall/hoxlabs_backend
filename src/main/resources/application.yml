@@ -49,6 +49,10 @@ gemini:
 pollinations:
   api-key: ${POLLINATIONS_API_KEY}
 
+firebase:
+  config:
+    path: ${FIREBASE_CONFIG_PATH:firebase-service-account.json}
+
 management:
   endpoints:
     web:
@@ -61,4 +65,3 @@ logging:
     org.springframework.web: DEBUG
     org.springframework.web.servlet.DispatcherServlet: DEBUG
     org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
-

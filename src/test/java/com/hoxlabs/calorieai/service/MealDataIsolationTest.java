@@ -16,6 +16,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,11 +54,11 @@ public class MealDataIsolationTest {
         when(aiNutritionService.analyzeMeal(anyString())).thenReturn(new AiNutritionResponse(Collections.emptyList(), new AiNutritionResponse.TotalsDto(100, 10.0, 10.0, 5.0), "high", null));
 
         // 2. Log Meal for User A
-        MealLogRequest reqA = new MealLogRequest("Meal A", MealType.LUNCH);
+        MealLogRequest reqA = new MealLogRequest("Meal A", MealType.LUNCH, LocalDate.now());
         mealService.logMeal(userA.getEmail(), reqA);
 
         // 3. Log Meal for User B
-        MealLogRequest reqB = new MealLogRequest("Meal B", MealType.DINNER);
+        MealLogRequest reqB = new MealLogRequest("Meal B", MealType.DINNER, LocalDate.now());
         mealService.logMeal(userB.getEmail(), reqB);
 
         // 4. Fetch History for User A

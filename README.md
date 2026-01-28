@@ -14,11 +14,11 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 - **AI Health Coach**: Conversational mode for advice, tips, and motivation without logging calories. Now context-aware (knows your recent nutrition history).
 - **Date-Specific Meal Logging**: Log meals for past dates to keep your history accurate.
 - **Enhanced User Profile**: Track comprehensive stats including Age, Gender, Weight, Height, and Macro Goals.
-- **User Authentication**: Secure JWT-based registration and login system.
+- **Firebase Authentication**: Secure, scalable authentication supporting Google Sign-In and Email/Password.
 - **Daily Dashboard**: Aggregates daily nutritional intake against user specific calorie goals.
 - **Robust Testing**: Comprehensive test suite covering Unit, Integration, and Edge Case scenarios (>35 tests).
 - **Multi-Tenancy & Data Isolation**: Strict user-level data segregation ensures users only access their own meals and metrics.
-- **Secure**: Implements Spring Security 6 with stateless JWT authentication.
+- **Secure**: Implements Spring Security 6 with stateless Firebase token verification.
 
 ## 🛠️ Technology Stack
 
@@ -26,24 +26,27 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 - **Language**: Java 17+
 - **Database**: PostgreSQL (Primary), H2 (Test Isolation)
 - **AI Service**: Pollinations.ai (OpenAI compatible API)
-- **Security**: Spring Security, JJWT
+- **Authentication**: Firebase Auth (Admin SDK)
+- **Security**: Spring Security
 - **Build Tool**: Maven
 
 ## 🔌 API Reference
 
-### 🔐 Authentication
+### 🔐 Authentication & User Sync
 
-#### 1. Register User
+> **Note**: Authentication is handled on the client-side via Firebase. The client obtains a Firebase ID Token and sends it in the `Authorization` header (`Bearer <token>`).
 
-**Endpoint**: `POST /api/auth/register`
+#### 1. Sync User (Login/Register)
+
+Updates the user's profile in the database or creates a new one if they don't exist. Call this immediately after a successful Firebase login on the client.
+
+**Endpoint**: `POST /api/auth/sync`
 
 - **Request Body**:
   ```json
   {
-    "email": "user@example.com",
-    "password": "securePassword123",
-    "calorieGoal": 2000,
     "name": "Alex",
+    "dailyCalorieGoal": 2200,
     "age": 25,
     "gender": "MALE",
     "weight": 70.5,
@@ -52,75 +55,11 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
     "profilePhotoUrl": "http://..."
   }
   ```
-- **Response**:
-  ```json
-  {
-    "token": "eyJhbGciOiJIUzI1NiJ9...",
-    "refreshToken": "d8a1...",
-    "user": {
-      "id": 123,
-      "name": "Alex",
-      "email": "user@example.com",
-      "age": 25,
-      "age": 25,
-      "gender": "MALE",
-      "weight": 70.5,
-      "height": 175.0,
-      "fitnessGoal": "WEIGHT_LOSS",
-      "calorieGoal": 2000,
-      "proteinGoal": 150,
-      "carbsGoal": 200,
-      "fatGoal": 65,
-      "profilePhotoUrl": "http://..."
-    }
-  }
-  ```
+- **Response**: Returns the synced User Profile.
 
-#### 2. Login
+### 👤 User Profile
 
-**Endpoint**: `POST /api/auth/login`
-
-- **Request Body**:
-  ```json
-  {
-    "email": "user@example.com",
-    "password": "securePassword123"
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "token": "eyJhbGciOiJIUzI1NiJ9...",
-    "refreshToken": "d8a1...",
-    "user": {
-      "id": 123,
-      "name": "Alex",
-      "email": "user@example.com",
-      "age": 25,
-      ...
-    }
-  }
-  ```
-
-#### 3. Refresh Access Token (NEW)
-
-**Endpoint**: `POST /api/auth/refresh-token`
-
-- **Request Body**:
-  ```json
-  {
-    "refreshToken": "d8a1..."
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
-    "refreshToken": "d8a1..."
-  }
-  ```
-
-#### 4. Get User Profile
+#### 2. Get User Profile
 
 **Endpoint**: `GET /api/user/profile`
 
@@ -136,15 +75,15 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
     "height": 175.0,
     "fitnessGoal": "WEIGHT_LOSS",
     "calorieGoal": 2000,
-    "photoUrl": "http://...",
     "proteinGoal": 150,
     "carbsGoal": 200,
     "fatGoal": 65,
-    "role": "USER"
+    "role": "USER",
+    "profilePhotoUrl": "http://..."
   }
   ```
 
-#### 5. Update User Profile
+#### 3. Update User Profile
 
 **Endpoint**: `PUT /api/user/profile`
 
@@ -159,9 +98,9 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
     "profilePhotoUrl": "https://example.com/me.jpg"
   }
   ```
-- **Response**: Returns the updated User Profile (same JSON structure as Get Profile).
+- **Response**: Returns the updated User Profile.
 
-#### 6. Upload Profile Image
+#### 4. Upload Profile Image
 
 **Endpoint**: `POST /api/user/profile-image`
 
@@ -176,10 +115,9 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 
 ### 🍛 Meals
 
-> **Note**: All Meal and Dashboard endpoints require the `Authorization` header:
-> `Authorization: Bearer <your_jwt_token>`
+> **Note**: All Meal and Dashboard endpoints require the `Authorization` header with a valid Firebase ID Token.
 
-#### 7. Log a Meal (AI Analysis)
+#### 5. Log a Meal (AI Analysis)
 
 **Endpoint**: `POST /api/meals/log`
 
@@ -213,29 +151,14 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   }
   ```
 
-#### 8. Get Meal History
+#### 6. Get Meal History
 
 **Endpoint**: `GET /api/meals/history`
 
-- **Response**: A list of meal logs (structure same as Log Meal response), sorted by newest first.
-  ```json
-  [
-    {
-      "id": 2,
-      "text": "Chicken Curry",
-      "imageUrl": "https://image.pollinations.ai/prompt/Chicken%20Curry",
-      ...
-    },
-    {
-      "id": 1,
-      "text": "2 Idlis",
-      "imageUrl": "https://image.pollinations.ai/prompt/2%20Idlis",
-      ...
-    }
-  ]
-  ```
+- **Query Param (Optional)**: `date=YYYY-MM-DD` (Filter logs by specific date)
+- **Response**: A list of meal logs, sorted by newest first.
 
-#### 9. Delete a Meal
+#### 7. Delete a Meal
 
 **Endpoint**: `DELETE /api/meals/{id}`
 
@@ -244,7 +167,7 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
 
 ### 💬 AI Coach
 
-#### 10. Get Health Advice
+#### 8. Get Health Advice
 
 **Endpoint**: `POST /api/chat/advice`
 
@@ -262,11 +185,11 @@ CalorieAI is a production-grade Spring Boot backend application that leverages A
   }
   ```
 
-> **Context Awareness**: The backend automatically injects the user's last 7 days of nutrition summaries and their current goals into the prompt, so the AI can give personalized advice (e.g., "I see you've been low on protein this week...").
+> **Context Awareness**: The backend automatically injects the user's last 7 days of nutrition summaries and their current goals into the prompt.
 
 ### 📊 Dashboard
 
-#### 10. Get Daily Summary
+#### 9. Get Daily Summary
 
 **Endpoint**: `GET /api/dashboard/daily`
 
@@ -298,16 +221,19 @@ mvn clean test -Dtest=CalorieAiTestSuite
 ## 🏃‍♂️ Running Locally
 
 1.  **Prerequisites**:
-
     - Java 17+
     - Maven
     - PostgreSQL (Local or Docker) running on port `5432`.
-    - Create a database named `calorieTracker`.
+    - database named `calorieTracker`.
 
-2.  **Configuration**:
-
-    - The application is pre-configured to connect to `jdbc:postgresql://localhost:5432/calorieTracker` with user `postgres` and password `root`.
-    - Modify `src/main/resources/application.yml` if your credentials differ.
+2.  **Firebase Configuration**:
+    - **Required**: Place your `firebase-service-account.json` file in the project root.
+    - Ensure `application.yml` points to it:
+      ```yaml
+      firebase:
+        config:
+          path: firebase-service-account.json
+      ```
 
 3.  **Build & Run**:
     ```bash
@@ -320,13 +246,13 @@ mvn clean test -Dtest=CalorieAiTestSuite
 
 ```
 src/main/java/com/hoxlabs/calorieai
-├── config/          # Security & App Config
+├── config/          # Firebase Config, Security Config
 ├── controller/      # REST Endpoints (Auth, Meal, Dashboard)
 ├── dto/             # Data Transfer Objects
 ├── entity/          # JPA Entities (User, MealLog, FoodItem)
 ├── exception/       # Global Error Handling
 ├── repository/      # Data Access Interfaces
-├── security/        # JWT Filter & Util
+├── security/        # FirebaseTokenFilter
 ├── service/         # Business Logic & AI Integration
 └── utils/           # Utility Classes
 ```
@@ -334,22 +260,3 @@ src/main/java/com/hoxlabs/calorieai
 ---
 
 _Built with ❤️ by HoxLabs_
-
-## Deployment
-
-### Render.com
-
-This application is ready for deployment on [Render](https://render.com).
-
-1.  **Create a New Web Service**: Connect your GitHub repository to Render.
-2.  **Configuration**:
-    - **Runtime**: Docker
-    - **Build Command**: (Not needed with Docker)
-    - **Start Command**: (Not needed with Docker)
-3.  **Environment Variables**:
-    - `SPRING_PROFILES_ACTIVE`: `prod` (Ensure you have a `application-prod.yml` or configure DB vars here)
-    - `PORT`: `8080`
-    - Database connection details (`SPRING_DATASOURCE_URL`, etc.) if not using the default or if overriding `application.yml`.
-4.  **Health Check**: Render should automatically detect `/actuator/health`.
-
-A `render.yaml` file is included for "Blueprint" deployments.

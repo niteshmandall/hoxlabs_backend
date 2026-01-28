@@ -10,6 +10,11 @@ import java.util.List;
 @Repository
 public interface MealLogRepository extends JpaRepository<MealLog, Long> {
     List<MealLog> findByUserId(Long userId);
+
     List<MealLog> findAllByUserOrderByTimestampDesc(com.hoxlabs.calorieai.entity.User user);
+
     List<MealLog> findByUserIdAndTimestampBetween(Long userId, LocalDateTime start, LocalDateTime end);
+
+    List<MealLog> findAllByUserAndTimestampBetween(com.hoxlabs.calorieai.entity.User user, LocalDateTime start,
+            LocalDateTime end);
 }

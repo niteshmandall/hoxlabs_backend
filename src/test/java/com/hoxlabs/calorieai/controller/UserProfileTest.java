@@ -26,65 +26,65 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class UserProfileTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+        @Autowired
+        private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-    
-    // We need to verify that fetching profile uses UserRepository directly in controller
-    // or calls a service. The controller calls userRepository directly for GET.
-    // So we need to populate data in DB or spy userRepository.
-    // However, @SpringBootTest uses the real DB (H2).
-    // So we should save a user first.
+        @Autowired
+        private ObjectMapper objectMapper;
 
-    @Autowired
-    private com.hoxlabs.calorieai.repository.UserRepository userRepository;
+        // We need to verify that fetching profile uses UserRepository directly in
+        // controller
+        // or calls a service. The controller calls userRepository directly for GET.
+        // So we need to populate data in DB or spy userRepository.
+        // However, @SpringBootTest uses the real DB (H2).
+        // So we should save a user first.
 
-    @MockBean
-    private AuthService authService; // For updateProfile
+        @Autowired
+        private com.hoxlabs.calorieai.repository.UserRepository userRepository;
 
-    @MockBean
-    private ImageService imageService; // Required bean
+        @MockBean
+        private AuthService authService; // For updateProfile
 
-    @Test
-    @WithMockUser(username = "profileuser@test.com")
-    void getUserProfile_ShouldReturnProfile_WhenUserExists() throws Exception {
-        // Setup User
-        com.hoxlabs.calorieai.entity.User user = new com.hoxlabs.calorieai.entity.User();
-        user.setEmail("profileuser@test.com");
-        user.setPassword("pass");
-        user.setName("Test User");
-        user.setRole(com.hoxlabs.calorieai.entity.Role.USER);
-        user.setProfilePhotoUrl("http://example.com/photo.jpg");
-        userRepository.save(user);
+        @MockBean
+        private ImageService imageService; // Required bean
 
-        mockMvc.perform(get("/api/user/profile")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("profileuser@test.com"))
-                .andExpect(jsonPath("$.name").value("Test User"))
-                .andExpect(jsonPath("$.profilePhotoUrl").value("http://example.com/photo.jpg"));
-    }
+        @Test
+        @WithMockUser(username = "profileuser@test.com")
+        void getUserProfile_ShouldReturnProfile_WhenUserExists() throws Exception {
+                // Setup User
+                com.hoxlabs.calorieai.entity.User user = new com.hoxlabs.calorieai.entity.User();
+                user.setEmail("profileuser@test.com");
+                user.setName("Test User");
+                user.setRole(com.hoxlabs.calorieai.entity.Role.USER);
+                user.setProfilePhotoUrl("http://example.com/photo.jpg");
+                userRepository.save(user);
 
-    @Test
-    @WithMockUser(username = "profileuser@test.com")
-    void updateProfile_ShouldReturnUpdatedProfile() throws Exception {
-        UserProfileDTO updatedProfile = UserProfileDTO.builder()
-                .name("Updated Name")
-                .email("profileuser@test.com")
-                .build();
+                mockMvc.perform(get("/api/user/profile")
+                                .contentType(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.email").value("profileuser@test.com"))
+                                .andExpect(jsonPath("$.name").value("Test User"))
+                                .andExpect(jsonPath("$.profilePhotoUrl").value("http://example.com/photo.jpg"));
+        }
 
-        when(authService.updateProfile(eq("profileuser@test.com"), any(UpdateProfileRequest.class)))
-                .thenReturn(updatedProfile);
+        @Test
+        @WithMockUser(username = "profileuser@test.com")
+        void updateProfile_ShouldReturnUpdatedProfile() throws Exception {
+                UserProfileDTO updatedProfile = UserProfileDTO.builder()
+                                .name("Updated Name")
+                                .email("profileuser@test.com")
+                                .build();
 
-        UpdateProfileRequest request = new UpdateProfileRequest();
-        request.setName("Updated Name");
+                when(authService.updateProfile(eq("profileuser@test.com"), any(UpdateProfileRequest.class)))
+                                .thenReturn(updatedProfile);
 
-        mockMvc.perform(put("/api/user/profile")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Name"));
-    }
+                UpdateProfileRequest request = new UpdateProfileRequest();
+                request.setName("Updated Name");
+
+                mockMvc.perform(put("/api/user/profile")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.name").value("Updated Name"));
+        }
 }

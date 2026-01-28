@@ -1,17 +1,10 @@
 package com.hoxlabs.calorieai.service;
 
-import com.hoxlabs.calorieai.dto.AuthenticationRequest;
-import com.hoxlabs.calorieai.dto.AuthenticationResponse;
-import com.hoxlabs.calorieai.dto.RegisterRequest;
+import com.hoxlabs.calorieai.dto.UpdateProfileRequest;
 import com.hoxlabs.calorieai.dto.UserProfileDTO;
-import com.hoxlabs.calorieai.entity.Role;
 import com.hoxlabs.calorieai.entity.User;
 import com.hoxlabs.calorieai.repository.UserRepository;
-import com.hoxlabs.calorieai.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -84,5 +77,35 @@ public class AuthService {
                                 .fatGoal(user.getFatGoal())
                                 .role(user.getRole())
                                 .build();
+        }
+
+        public UserProfileDTO updateProfile(String email, com.hoxlabs.calorieai.dto.UpdateProfileRequest request) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+
+                if (request.getName() != null)
+                        user.setName(request.getName());
+                if (request.getAge() != null)
+                        user.setAge(request.getAge());
+                if (request.getGender() != null)
+                        user.setGender(request.getGender());
+                if (request.getWeight() != null)
+                        user.setWeight(request.getWeight());
+                if (request.getHeight() != null)
+                        user.setHeight(request.getHeight());
+                if (request.getFitnessGoal() != null)
+                        user.setFitnessGoal(request.getFitnessGoal());
+                if (request.getDailyCalorieGoal() != null)
+                        user.setCalorieGoal(request.getDailyCalorieGoal());
+                if (request.getProteinGoal() != null)
+                        user.setProteinGoal(request.getProteinGoal());
+                if (request.getCarbsGoal() != null)
+                        user.setCarbsGoal(request.getCarbsGoal());
+                if (request.getFatGoal() != null)
+                        user.setFatGoal(request.getFatGoal());
+
+                userRepository.save(user);
+
+                return getUserProfile(email);
         }
 }

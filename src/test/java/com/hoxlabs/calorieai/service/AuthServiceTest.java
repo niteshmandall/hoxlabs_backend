@@ -1,22 +1,12 @@
 package com.hoxlabs.calorieai.service;
 
-import com.hoxlabs.calorieai.dto.AuthenticationRequest;
-import com.hoxlabs.calorieai.dto.AuthenticationResponse;
-import com.hoxlabs.calorieai.dto.RegisterRequest;
 import com.hoxlabs.calorieai.entity.User;
 import com.hoxlabs.calorieai.repository.UserRepository;
-import com.hoxlabs.calorieai.security.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.LockedException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -27,8 +17,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
     @Mock
     private UserRepository userRepository;
 

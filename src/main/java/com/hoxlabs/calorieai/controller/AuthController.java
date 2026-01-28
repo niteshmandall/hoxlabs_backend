@@ -1,8 +1,5 @@
 package com.hoxlabs.calorieai.controller;
 
-import com.hoxlabs.calorieai.dto.AuthenticationRequest;
-import com.hoxlabs.calorieai.dto.AuthenticationResponse;
-import com.hoxlabs.calorieai.dto.RegisterRequest;
 import com.hoxlabs.calorieai.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -23,8 +23,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @org.springframework.test.context.TestPropertySource(properties = {
-    "jwt.refresh-expiration=604800000",
-    "jwt.expiration=900000"
+        "jwt.refresh-expiration=604800000",
+        "jwt.expiration=900000"
 })
 class ProfileImageUploadTest {
 
@@ -47,7 +47,6 @@ class ProfileImageUploadTest {
         userRepository.deleteAll();
         com.hoxlabs.calorieai.entity.User user = new com.hoxlabs.calorieai.entity.User();
         user.setEmail("test@example.com");
-        user.setPassword("password");
         user.setRole(com.hoxlabs.calorieai.entity.Role.USER);
         user = userRepository.save(user);
         testUserId = user.getId();
@@ -60,19 +59,20 @@ class ProfileImageUploadTest {
                 "image",
                 "test-image.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "some-binary-data".getBytes()
-        );
+                "some-binary-data".getBytes());
 
-        when(imageService.saveProfileImage(any(), eq(testUserId))).thenReturn("/uploads/users/" + testUserId + "/profile.jpg");
+        when(imageService.saveProfileImage(any(), eq(testUserId)))
+                .thenReturn("/uploads/users/" + testUserId + "/profile.jpg");
 
         mockMvc.perform(multipart("/api/user/profile-image")
-                        .file(file))
+                .file(file))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.url").value("/uploads/users/" + testUserId + "/profile.jpg"));
-        
+
         // Verify interactions
         verify(imageService).saveProfileImage(any(), eq(testUserId));
-        verify(authService).updateProfilePhoto(eq("test@example.com"), eq("/uploads/users/" + testUserId + "/profile.jpg"));
+        verify(authService).updateProfilePhoto(eq("test@example.com"),
+                eq("/uploads/users/" + testUserId + "/profile.jpg"));
     }
 
     @Test
@@ -82,13 +82,12 @@ class ProfileImageUploadTest {
                 "image",
                 "test-image.jpg",
                 MediaType.IMAGE_JPEG_VALUE,
-                "some-binary-data".getBytes()
-        );
+                "some-binary-data".getBytes());
 
         when(imageService.saveProfileImage(any(), eq(testUserId))).thenThrow(new java.io.IOException("Disk full"));
 
         mockMvc.perform(multipart("/api/user/profile-image")
-                        .file(file))
+                .file(file))
                 .andExpect(status().isInternalServerError());
     }
 }

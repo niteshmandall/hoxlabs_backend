@@ -14,10 +14,9 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "users",
-        uniqueConstraints = {
-            @UniqueConstraint(name = "uc_users_email", columnNames = "email")
-        })
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(name = "uc_users_email", columnNames = "email")
+})
 public class User implements UserDetails {
 
     @Id
@@ -27,8 +26,8 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
-    private String password;
+    @Column(unique = true)
+    private String firebaseUid;
 
     @Column(nullable = false)
     private Integer calorieGoal = 2000; // Default goal
@@ -57,12 +56,17 @@ public class User implements UserDetails {
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
-    public User(String email, String password, Role role, Integer calorieGoal) {
+    public User(String email, Role role, Integer calorieGoal, String firebaseUid) {
         this.email = email;
-        this.password = password;
         this.role = role == null ? Role.USER : role;
         this.calorieGoal = calorieGoal == null ? 2000 : calorieGoal;
+        this.firebaseUid = firebaseUid;
         this.createdAt = Instant.now();
+    }
+
+    @Override
+    public String getPassword() {
+        return null;
     }
 
     @Override

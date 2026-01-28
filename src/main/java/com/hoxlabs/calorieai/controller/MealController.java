@@ -20,24 +20,26 @@ public class MealController {
 
     @PostMapping("/log")
     public ResponseEntity<MealLogResponse> logMeal(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody @Valid MealLogRequest request
-    ) throws JsonProcessingException {
-        return ResponseEntity.ok(mealService.logMeal(userDetails.getUsername(), request));
+            @AuthenticationPrincipal String email,
+            @RequestBody @Valid MealLogRequest request) throws JsonProcessingException {
+        return ResponseEntity.ok(mealService.logMeal(email, request));
     }
 
     @GetMapping("/history")
     public ResponseEntity<java.util.List<MealLogResponse>> getMealHistory(
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        return ResponseEntity.ok(mealService.getMealHistory(userDetails.getUsername()));
+            @AuthenticationPrincipal String email,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate date) {
+        if (date != null) {
+            return ResponseEntity.ok(mealService.getMealHistory(email, date));
+        }
+        return ResponseEntity.ok(mealService.getMealHistory(email));
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMeal(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long id
-    ) {
-        mealService.deleteMeal(id, userDetails.getUsername());
+            @AuthenticationPrincipal String email,
+            @PathVariable Long id) {
+        mealService.deleteMeal(id, email);
         return ResponseEntity.ok().build();
     }
 }

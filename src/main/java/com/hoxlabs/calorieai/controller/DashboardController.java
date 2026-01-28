@@ -22,10 +22,9 @@ public class DashboardController {
 
     @GetMapping("/daily")
     public ResponseEntity<NutritionSummary> getDailySummary(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(required = false) LocalDate date
-    ) {
+            @AuthenticationPrincipal String email,
+            @RequestParam(required = false) LocalDate date) {
         LocalDate queryDate = date != null ? date : LocalDate.now();
-        return ResponseEntity.ok(dashboardService.getDailySummary(userDetails.getUsername(), queryDate));
+        return ResponseEntity.ok(dashboardService.getDailySummary(email, queryDate));
     }
 }

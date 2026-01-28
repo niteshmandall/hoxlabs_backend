@@ -52,24 +52,24 @@ public class MealService {
         MealLog mealLog = new MealLog();
         mealLog.setUser(user);
         mealLog.setMealType(request.getMealType());
-        
-        LocalDateTime timestamp = (request.getDate() != null) 
-                ? request.getDate().atTime(LocalDateTime.now().toLocalTime()) 
+
+        LocalDateTime timestamp = (request.getDate() != null)
+                ? request.getDate().atTime(LocalDateTime.now().toLocalTime())
                 : LocalDateTime.now();
         mealLog.setTimestamp(timestamp);
-        
+
         mealLog.setRawText(request.getText());
-        
+
         // Generate Image URL (Instant)
         if (request.getText() != null && !request.getText().isEmpty()) {
             String prompt = "Delicious food photography of " + request.getText();
             String encodedPrompt = URLEncoder.encode(prompt, StandardCharsets.UTF_8);
             // Enhanced Image Generation URL with Turbo model + API Key
-            String imageUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt + 
-                              "?model=turbo&width=1024&height=1024&enhance=true&nologo=true&api_key=" + apiKey;
+            String imageUrl = "https://image.pollinations.ai/prompt/" + encodedPrompt +
+                    "?model=turbo&width=1024&height=1024&enhance=true&nologo=true&api_key=" + apiKey;
             mealLog.setImageUrl(imageUrl);
         }
-        
+
         mealLog = mealLogRepository.save(mealLog);
 
         // 3. Save Food Items
@@ -89,7 +89,7 @@ public class MealService {
                 item.setCarbs(dto.getCarbs());
                 item.setFat(dto.getFat());
                 foodItems.add(item);
-    
+
                 totalCalories += dto.getCalories();
                 totalProtein += dto.getProtein();
                 totalCarbs += dto.getCarbs();
@@ -99,7 +99,8 @@ public class MealService {
         }
 
         // 4. Update Nutrition Summary
-        updateNutritionSummary(user, totalCalories, totalProtein, totalCarbs, totalFat, mealLog.getTimestamp().toLocalDate());
+        updateNutritionSummary(user, totalCalories, totalProtein, totalCarbs, totalFat,
+                mealLog.getTimestamp().toLocalDate());
 
         // 5. Build Response
         MealLogResponse response = MealLogResponse.builder()
@@ -110,10 +111,10 @@ public class MealService {
                 .foodItems(aiResponse.getFoodItems())
                 .totalCalories(totalCalories)
                 .build();
-                
+
         // Evict Caches
         evictCaches(user.getEmail(), mealLog.getTimestamp().toLocalDate());
-        
+
         return response;
     }
 
@@ -126,7 +127,8 @@ public class MealService {
         }
     }
 
-    private void updateNutritionSummary(User user, int calories, double protein, double carbs, double fat, LocalDate date) {
+    private void updateNutritionSummary(User user, int calories, double protein, double carbs, double fat,
+            LocalDate date) {
         NutritionSummary summary = nutritionSummaryRepository.findByUserIdAndDate(user.getId(), date)
                 .orElse(new NutritionSummary(null, user, date, 0, 0.0, 0.0, 0.0));
 
@@ -137,41 +139,72 @@ public class MealService {
 
         nutritionSummaryRepository.save(summary);
     }
-    
 
-    
     @Transactional(readOnly = true)
     @org.springframework.cache.annotation.Cacheable(value = "mealHistory", key = "#userEmail")
     public List<MealLogResponse> getMealHistory(String userEmail) {
-         User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-         List<MealLog> logs = mealLogRepository.findAllByUserOrderByTimestampDesc(user);
-         
-         return logs.stream().map(log -> {
-             List<AiNutritionResponse.FoodItemDto> itemDtos = log.getFoodItems().stream()
-                     .map(item -> new AiNutritionResponse.FoodItemDto(
-                             item.getName(), 
-                             "1 serving", // Default quantity as it's not in FoodItem entity yet, or handled elsewhere
-                             item.getCalories(), 
-                             item.getProtein(), 
-                             item.getCarbs(), 
-                             item.getFat()
-                     ))
-                     .collect(Collectors.toList());
+        List<MealLog> logs = mealLogRepository.findAllByUserOrderByTimestampDesc(user);
 
-             int totalCals = itemDtos.stream().mapToInt(AiNutritionResponse.FoodItemDto::getCalories).sum();
+        return logs.stream().map(log -> {
+            List<AiNutritionResponse.FoodItemDto> itemDtos = log.getFoodItems().stream()
+                    .map(item -> new AiNutritionResponse.FoodItemDto(
+                            item.getName(),
+                            "1 serving", // Default quantity as it's not in FoodItem entity yet, or handled elsewhere
+                            item.getCalories(),
+                            item.getProtein(),
+                            item.getCarbs(),
+                            item.getFat()))
+                    .collect(Collectors.toList());
 
-             return MealLogResponse.builder()
-                     .id(log.getId())
-                     .text(log.getRawText())
-                     .imageUrl(log.getImageUrl())
-                     .timestamp(log.getTimestamp())
-                     .foodItems(itemDtos)
-                     .totalCalories(totalCals)
-                     .build();
-         }).collect(Collectors.toList());
+            int totalCals = itemDtos.stream().mapToInt(AiNutritionResponse.FoodItemDto::getCalories).sum();
+
+            return MealLogResponse.builder()
+                    .id(log.getId())
+                    .text(log.getRawText())
+                    .imageUrl(log.getImageUrl())
+                    .timestamp(log.getTimestamp())
+                    .foodItems(itemDtos)
+                    .totalCalories(totalCals)
+                    .build();
+        }).collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<MealLogResponse> getMealHistory(String userEmail, LocalDate date) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+        List<MealLog> logs = mealLogRepository.findAllByUserAndTimestampBetween(user, startOfDay, endOfDay);
+
+        return logs.stream().map(log -> {
+            List<AiNutritionResponse.FoodItemDto> itemDtos = log.getFoodItems().stream()
+                    .map(item -> new AiNutritionResponse.FoodItemDto(
+                            item.getName(),
+                            "1 serving",
+                            item.getCalories(),
+                            item.getProtein(),
+                            item.getCarbs(),
+                            item.getFat()))
+                    .collect(Collectors.toList());
+
+            int totalCals = itemDtos.stream().mapToInt(AiNutritionResponse.FoodItemDto::getCalories).sum();
+
+            return MealLogResponse.builder()
+                    .id(log.getId())
+                    .text(log.getRawText())
+                    .imageUrl(log.getImageUrl())
+                    .timestamp(log.getTimestamp())
+                    .foodItems(itemDtos)
+                    .totalCalories(totalCals)
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
     @Transactional
     public void deleteMeal(Long mealId, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
@@ -185,7 +218,7 @@ public class MealService {
         }
 
         mealLogRepository.delete(mealLog);
-        
+
         // Evict Caches
         evictCaches(userEmail, mealLog.getTimestamp().toLocalDate());
     }
@@ -193,16 +226,16 @@ public class MealService {
     public String getRecentNutritionSummaries(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         List<NutritionSummary> summaries = nutritionSummaryRepository.findTop7ByUserIdOrderByDateDesc(user.getId());
-        
+
         if (summaries.isEmpty()) {
             return "No recent nutrition history available.";
         }
-        
+
         StringBuilder sb = new StringBuilder("Recent Nutrition History (Last 7 Days):\n");
         for (NutritionSummary s : summaries) {
-            sb.append(String.format("- Date: %s | Calories: %d | Protein: %.1fg | Carbs: %.1fg | Fat: %.1fg\n", 
+            sb.append(String.format("- Date: %s | Calories: %d | Protein: %.1fg | Carbs: %.1fg | Fat: %.1fg\n",
                     s.getDate(), s.getTotalCalories(), s.getTotalProtein(), s.getTotalCarbs(), s.getTotalFat()));
         }
         return sb.toString();

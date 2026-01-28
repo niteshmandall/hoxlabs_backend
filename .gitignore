@@ -34,12 +34,8 @@ build/
 
 ### Secrets ###
 .env
-.env.example
 
-### Database Backups ###
-backups/
-backup_cron.log
-
-### Misc ###
-test.json
-.cloudflared/
+firebase-service-account.json
+google-services.json
+google-services (1).json
+calorie-tracker-*.json

@@ -1,17 +1,10 @@
 package com.hoxlabs.calorieai.service;
 
-import com.hoxlabs.calorieai.dto.AuthenticationRequest;
-import com.hoxlabs.calorieai.dto.AuthenticationResponse;
-import com.hoxlabs.calorieai.dto.RegisterRequest;
+import com.hoxlabs.calorieai.dto.UpdateProfileRequest;
 import com.hoxlabs.calorieai.dto.UserProfileDTO;
-import com.hoxlabs.calorieai.entity.Role;
 import com.hoxlabs.calorieai.entity.User;
 import com.hoxlabs.calorieai.repository.UserRepository;
-import com.hoxlabs.calorieai.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,181 +12,100 @@ import org.springframework.stereotype.Service;
 @lombok.extern.slf4j.Slf4j
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
-    private final RefreshTokenService refreshTokenService;
+        private final UserRepository userRepository;
 
-    public AuthenticationResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+        @org.springframework.cache.annotation.CacheEvict(value = "userProfile", key = "#email")
+        public String updateProfilePhoto(String email, String photoUrl) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+                user.setProfilePhotoUrl(photoUrl);
+                userRepository.save(user);
+                return photoUrl;
         }
 
-        var user = new User(
-                request.getEmail(),
-                passwordEncoder.encode(request.getPassword()),
-                Role.USER,
-                request.getCalorieGoal()
-        );
-        user.setName(request.getName());
-        user.setAge(request.getAge());
-        user.setGender(request.getGender());
-        user.setWeight(request.getWeight());
-        user.setHeight(request.getHeight());
-        user.setFitnessGoal(request.getFitnessGoal());
+        public User syncUser(String email, String firebaseUid, com.hoxlabs.calorieai.dto.SyncUserRequest request) {
+                return userRepository.findByEmail(email)
+                                .map(existingUser -> {
+                                        if (existingUser.getFirebaseUid() == null) {
+                                                existingUser.setFirebaseUid(firebaseUid);
+                                                userRepository.save(existingUser);
+                                        }
+                                        return existingUser;
+                                })
+                                .orElseGet(() -> {
+                                        // Create new user
+                                        User newUser = new User(email, com.hoxlabs.calorieai.entity.Role.USER,
+                                                        request.getDailyCalorieGoal(), firebaseUid);
 
-        userRepository.save(user);
-        var jwtToken = jwtUtil.generateToken(user);
-        var refreshToken = refreshTokenService.createRefreshToken(user.getId()); // Create Refresh Token
+                                        if (request.getName() != null)
+                                                newUser.setName(request.getName());
+                                        if (request.getAge() != null)
+                                                newUser.setAge(request.getAge());
+                                        if (request.getGender() != null)
+                                                newUser.setGender(request.getGender());
+                                        if (request.getWeight() != null)
+                                                newUser.setWeight(request.getWeight());
+                                        if (request.getHeight() != null)
+                                                newUser.setHeight(request.getHeight());
+                                        if (request.getFitnessGoal() != null)
+                                                newUser.setFitnessGoal(request.getFitnessGoal());
+                                        if (request.getProfilePhotoUrl() != null)
+                                                newUser.setProfilePhotoUrl(request.getProfilePhotoUrl());
 
-        var userProfile = UserProfileDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .age(user.getAge())
-                .gender(user.getGender())
-                .weight(user.getWeight())
-                .height(user.getHeight())
-                .fitnessGoal(user.getFitnessGoal())
-                .calorieGoal(user.getCalorieGoal())
-                .profilePhotoUrl(user.getProfilePhotoUrl())
-                .proteinGoal(user.getProteinGoal())
-                .carbsGoal(user.getCarbsGoal())
-                .fatGoal(user.getFatGoal())
-                .role(user.getRole())
-                .build();
+                                        return userRepository.save(newUser);
+                                });
+        }
 
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .refreshToken(refreshToken.getToken())
-                .user(userProfile)
-                .build();
-    }
-    
-    @org.springframework.cache.annotation.CacheEvict(value = "userProfile", key = "#email")
-    public String updateProfilePhoto(String email, String photoUrl) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setProfilePhotoUrl(photoUrl);
-        userRepository.save(user);
-        return photoUrl;
-    }
-    
-    @org.springframework.cache.annotation.CacheEvict(value = "userProfile", key = "#email")
-    public UserProfileDTO updateProfile(String email, com.hoxlabs.calorieai.dto.UpdateProfileRequest request) {
-        var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        @org.springframework.cache.annotation.Cacheable(value = "userProfile", key = "#email")
+        public UserProfileDTO getUserProfile(String email) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (request.getName() != null) user.setName(request.getName());
-        if (request.getAge() != null) user.setAge(request.getAge());
-        if (request.getGender() != null) user.setGender(request.getGender());
-        if (request.getWeight() != null) user.setWeight(request.getWeight());
-        if (request.getHeight() != null) user.setHeight(request.getHeight());
-        if (request.getFitnessGoal() != null) user.setFitnessGoal(request.getFitnessGoal());
-        if (request.getDailyCalorieGoal() != null) user.setCalorieGoal(request.getDailyCalorieGoal());
-        
-        if (request.getProfilePhotoUrl() != null) user.setProfilePhotoUrl(request.getProfilePhotoUrl());
-        if (request.getProteinGoal() != null) user.setProteinGoal(request.getProteinGoal());
-        if (request.getCarbsGoal() != null) user.setCarbsGoal(request.getCarbsGoal());
-        if (request.getFatGoal() != null) user.setFatGoal(request.getFatGoal());
+                return UserProfileDTO.builder()
+                                .id(user.getId())
+                                .email(user.getEmail())
+                                .name(user.getName())
+                                .age(user.getAge())
+                                .gender(user.getGender())
+                                .weight(user.getWeight())
+                                .height(user.getHeight())
+                                .fitnessGoal(user.getFitnessGoal())
+                                .calorieGoal(user.getCalorieGoal())
+                                .profilePhotoUrl(user.getProfilePhotoUrl())
+                                .proteinGoal(user.getProteinGoal())
+                                .carbsGoal(user.getCarbsGoal())
+                                .fatGoal(user.getFatGoal())
+                                .role(user.getRole())
+                                .build();
+        }
 
-        user = userRepository.save(user);
+        public UserProfileDTO updateProfile(String email, com.hoxlabs.calorieai.dto.UpdateProfileRequest request) {
+                User user = userRepository.findByEmail(email)
+                                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return UserProfileDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .age(user.getAge())
-                .gender(user.getGender())
-                .weight(user.getWeight())
-                .height(user.getHeight())
-                .fitnessGoal(user.getFitnessGoal())
-                .calorieGoal(user.getCalorieGoal())
-                .profilePhotoUrl(user.getProfilePhotoUrl())
-                .proteinGoal(user.getProteinGoal())
-                .carbsGoal(user.getCarbsGoal())
-                .fatGoal(user.getFatGoal())
-                .role(user.getRole())
-                .build();
-    }
+                if (request.getName() != null)
+                        user.setName(request.getName());
+                if (request.getAge() != null)
+                        user.setAge(request.getAge());
+                if (request.getGender() != null)
+                        user.setGender(request.getGender());
+                if (request.getWeight() != null)
+                        user.setWeight(request.getWeight());
+                if (request.getHeight() != null)
+                        user.setHeight(request.getHeight());
+                if (request.getFitnessGoal() != null)
+                        user.setFitnessGoal(request.getFitnessGoal());
+                if (request.getDailyCalorieGoal() != null)
+                        user.setCalorieGoal(request.getDailyCalorieGoal());
+                if (request.getProteinGoal() != null)
+                        user.setProteinGoal(request.getProteinGoal());
+                if (request.getCarbsGoal() != null)
+                        user.setCarbsGoal(request.getCarbsGoal());
+                if (request.getFatGoal() != null)
+                        user.setFatGoal(request.getFatGoal());
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow();
-        var jwtToken = jwtUtil.generateToken(user);
-        var refreshToken = refreshTokenService.createRefreshToken(user.getId()); // Create Refresh Token
-        
-        var userProfile = UserProfileDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .age(user.getAge())
-                .gender(user.getGender())
-                .weight(user.getWeight())
-                .height(user.getHeight())
-                .fitnessGoal(user.getFitnessGoal())
-                .calorieGoal(user.getCalorieGoal())
-                .profilePhotoUrl(user.getProfilePhotoUrl())
-                .proteinGoal(user.getProteinGoal())
-                .carbsGoal(user.getCarbsGoal())
-                .fatGoal(user.getFatGoal())
-                .role(user.getRole())
-                .build();
+                userRepository.save(user);
 
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .refreshToken(refreshToken.getToken())
-                .user(userProfile)
-                .build();
-    }
-
-    public com.hoxlabs.calorieai.dto.TokenRefreshResponse refreshToken(com.hoxlabs.calorieai.dto.TokenRefreshRequest request) {
-        String requestRefreshToken = request.getRefreshToken();
-        // log.info("Attempting to refresh token: {}", requestRefreshToken); // Sensitive
-
-        return refreshTokenService.findByToken(requestRefreshToken)
-                .map(token -> {
-                    // log.info("RefreshToken found in DB for user: {}", token.getUser().getEmail());
-                    return refreshTokenService.verifyExpiration(token);
-                })
-                .map(com.hoxlabs.calorieai.entity.RefreshToken::getUser)
-                .map(user -> {
-                    String token = jwtUtil.generateToken(user);
-                    return com.hoxlabs.calorieai.dto.TokenRefreshResponse.builder()
-                            .accessToken(token)
-                            .refreshToken(requestRefreshToken)
-                            .build();
-                })
-                .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
-    }
-
-    @org.springframework.cache.annotation.Cacheable(value = "userProfile", key = "#email")
-    public UserProfileDTO getUserProfile(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return UserProfileDTO.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .age(user.getAge())
-                .gender(user.getGender())
-                .weight(user.getWeight())
-                .height(user.getHeight())
-                .fitnessGoal(user.getFitnessGoal())
-                .calorieGoal(user.getCalorieGoal())
-                .profilePhotoUrl(user.getProfilePhotoUrl())
-                .proteinGoal(user.getProteinGoal())
-                .carbsGoal(user.getCarbsGoal())
-                .fatGoal(user.getFatGoal())
-                .role(user.getRole())
-                .build();
-    }
+                return getUserProfile(email);
+        }
 }

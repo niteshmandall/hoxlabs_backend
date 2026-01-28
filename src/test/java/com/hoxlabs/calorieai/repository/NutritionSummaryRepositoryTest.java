@@ -25,7 +25,7 @@ class NutritionSummaryRepositoryTest {
     void findByUserIdAndDate_ShouldReturnSummary_WhenExists() {
         User user = new User();
         user.setEmail("test@example.com");
-        user.setPassword("password");
+
         user.setCalorieGoal(2000);
         entityManager.persist(user);
 
@@ -50,7 +50,7 @@ class NutritionSummaryRepositoryTest {
     void findByUserIdAndDate_ShouldReturnEmpty_WhenNotExists() {
         User user = new User();
         user.setEmail("test@example.com");
-        user.setPassword("password");
+
         user.setCalorieGoal(2000);
         entityManager.persist(user);
         entityManager.flush();

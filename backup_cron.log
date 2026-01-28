@@ -1,0 +1,80 @@
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260118_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260119_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260120_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260121_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260122_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260123_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260124_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260125_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260126_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.
+==========================================
+      Backing up Database (calorieTracker)      
+==========================================
+Container: calorieai-db
+Output:    ./backups/backup_20260128_020001.sql
+✅ Backup Successful!
+Cleaning up backups older than 7 days...
+Cleanup complete.

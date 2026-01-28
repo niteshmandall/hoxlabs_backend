@@ -9,5 +9,6 @@ RUN mvn clean package -DskipTests
 FROM amazoncorretto:17-alpine-jdk
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
+COPY calorie-tracker-10cc1-firebase-adminsdk-fbsvc-d0b420079d.json /app/firebase-service-account.json
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

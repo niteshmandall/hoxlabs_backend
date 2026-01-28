@@ -44,10 +44,10 @@ public class MealDataIsolationTest {
     @Test
     void testMealHistoryIsolation() throws Exception {
         // 1. Create User A and User B
-        User userA = new User("userA@example.com", "pass", Role.USER, 2000);
+        User userA = new User("userA@example.com", Role.USER, 2000, "uidA");
         userRepository.save(userA);
 
-        User userB = new User("userB@example.com", "pass", Role.USER, 2000);
+        User userB = new User("userB@example.com", Role.USER, 2000, "uidB");
         userRepository.save(userB);
 
         // Mock AI Service
